@@ -46,31 +46,33 @@ const Login = ({ isOpen, onClose, onSwitchToSignup }) => {
       }
 
       if (res.ok) {
-        // Store data in sessionStorage
         sessionStorage.setItem('userId', data.userId);
         sessionStorage.setItem('role', data.role);
-        sessionStorage.setItem("userName", data.name); 
+        sessionStorage.setItem("userName", data.name);
         alert('Signin successful!');
-      } else {
-        alert(data.message);
+        console.log("Redirecting to /student");
+        console.log(data.role)
+
+        if (data.role === "student") {
+          router.push("/student");
+        } else if (data.role === "instructor") {
+          router.push("/instructor");
+        } else {
+          router.push("/");
+        }
+
+        // Close modal after redirect
+        // onClose(); // Try commenting this out for testing
       }
 
-      // Successful login: redirect based on role
-      if (data.role === "student") {
-        router.push("/student");
-      } else if (data.role === "instructor") {
-        router.push("/instructor");
-      } else {
-        router.push("/"); // fallback
-      }
-
-      // Close modal and reset
+      // Close modal and reset after redirect
       setTimeout(() => {
-        onClose();
+        // onClose();
         setEmail("");
         setPassword("");
         setMessage("");
-      }, 300);
+      }, 100); // Short delay to allow navigation
+
     } catch (error) {
       console.error(error);
       setMessage("Something went wrong");

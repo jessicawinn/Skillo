@@ -7,7 +7,7 @@ export default function Home() {
     return (
         <>
             <NavBar />
-            <AllCourses basePath="/student"/>
+            <AllCourses basePath="/student" fetchEnrollments={true}/>
             <Footer />
         </>
     );

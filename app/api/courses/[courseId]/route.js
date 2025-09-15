@@ -48,12 +48,12 @@ export async function PUT(req, { params }) {
 
 export async function GET(req, { params }) {
   try {
-    const { id } = params;
+    const { courseId } = params;
     const client = await clientPromise;
     const db = client.db("Skillo");
     const courses = db.collection("courses");
 
-    const course = await courses.findOne({ _id: new ObjectId(id) });
+    const course = await courses.findOne({ _id: new ObjectId(courseId) });
 
     if (!course) {
       return new Response(JSON.stringify({ message: "Course not found" }), { status: 404 });

@@ -2,21 +2,45 @@
 
 import React, { useEffect, useState } from "react";
 import Course from "./Course";
+import Link from "next/link";
+import { useSearchParams } from "next/navigation";
 
-const AllCourses = ({ basePath = "" }) => {
+const AllCourses = ({ basePath = "", fetchEnrollments = true }) => {
   const [courses, setCourses] = useState([]);
   const [filteredCourses, setFilteredCourses] = useState([]);
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState("");
+  const [enrollments, setEnrollments] = useState([]);
+  const [selectedCategory, setSelectedCategory] = useState('All');
+  const searchParams = typeof window !== "undefined" ? new URLSearchParams(window.location.search) : null;
 
   useEffect(() => {
-    const fetchCourses = async () => {
+    const fetchData = async () => {
       try {
-        const res = await fetch("/api/courses", { method: 'GET' }); // your GET API
-        if (!res.ok) throw new Error("Failed to fetch courses");
-        const data = await res.json();
-        setCourses(data.courses || []);
-        setFilteredCourses(data.courses || []); // initial load shows all
+        const coursesRes = await fetch("/api/courses");
+        if (!coursesRes.ok) throw new Error("Failed to fetch courses");
+        const coursesData = await coursesRes.json();
+
+        const normalizedCourses = (coursesData.courses || []).map(c => ({
+          ...c,
+          _id: c._id.toString()
+        }));
+
+        setCourses(normalizedCourses);
+        setFilteredCourses(normalizedCourses);
+
+        if (fetchEnrollments) {
+          const userId = sessionStorage.getItem("userId");
+          const userName = sessionStorage.getItem("userName");
+          const role = sessionStorage.getItem("role");
+
+          const enrollmentsRes = await fetch(`/api/enrollments?userId=${userId}`);
+          if (!enrollmentsRes.ok) throw new Error("Failed to fetch enrollments");
+          const enrollmentsData = await enrollmentsRes.json();
+          const enrollmentIds = (enrollmentsData.enrollments || []).map(e => e.courseId.toString());
+          setEnrollments(enrollmentIds);
+        }
+
       } catch (err) {
         console.error(err);
       } finally {
@@ -24,15 +48,34 @@ const AllCourses = ({ basePath = "" }) => {
       }
     };
 
-    fetchCourses();
-  }, []);
+    fetchData();
+    // On initial mount, check for category query param
+    if (searchParams) {
+      const categoryParam = searchParams.get("category");
+      if (categoryParam) {
+        setSelectedCategory(categoryParam);
+      }
+    }
+  }, [fetchEnrollments]);
 
-  // Handle search on input change
+  // Get unique categories from courses
+  const categories = Array.from(new Set(courses.map(c => c.category).filter(Boolean)));
+
+  // Filter courses by selected category
+  useEffect(() => {
+    if (selectedCategory === 'All') {
+      setFilteredCourses(courses);
+    } else {
+      setFilteredCourses(courses.filter(c => c.category === selectedCategory));
+    }
+  }, [selectedCategory, courses]);
+
+  // Handle search
   const handleSearch = (e) => {
     const query = e.target.value.toLowerCase();
     setSearchQuery(query);
 
-    const filtered = courses.filter((course) =>
+    const filtered = courses.filter(course =>
       course.title.toLowerCase().includes(query) ||
       (course.description && course.description.toLowerCase().includes(query))
     );
@@ -41,6 +84,15 @@ const AllCourses = ({ basePath = "" }) => {
   };
 
   if (loading) return <p className="text-center mt-10">Loading courses...</p>;
+
+  const handleCategoryClick = (category) => {
+    setSelectedCategory(category);
+    // Update the URL query parameter
+    const url = category === 'All'
+      ? '/courses'
+      : `/courses?category=${encodeURIComponent(category)}`;
+    window.history.replaceState({}, '', url);
+  };
 
   return (
     <div className="px-10 py-6">
@@ -62,22 +114,37 @@ const AllCourses = ({ basePath = "" }) => {
         </div>
       </div>
 
+      {/* Dynamic Category filters */}
       <div className="flex justify-center space-x-6 text-gray-600 font-medium mb-6">
-        <button className="border-b-2 border-purple-400 pb-1">All</button>
-        <button>Problem Solving Skills</button>
-        <button>Interpersonal Skills</button>
-        <button>Technological Skills</button>
+        <button
+          className={`pb-1 ${selectedCategory === 'All' ? 'border-b-2 border-purple-400' : ''}`}
+          onClick={() => handleCategoryClick('All')}
+        >
+          All
+        </button>
+        {categories.map(category => (
+          <button
+            key={category}
+            className={`pb-1 ${selectedCategory === category ? 'border-b-2 border-purple-400' : ''}`}
+            onClick={() => handleCategoryClick(category)}
+          >
+            {category}
+          </button>
+        ))}
       </div>
 
+      {/* Course grid */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 px-10">
         {filteredCourses.length > 0 ? (
-          filteredCourses.map((course) => (
-            <Course
-              key={course._id}
-              course={course}
-              width="w-100"
-              basePath={basePath}
-            />
+          filteredCourses.map(course => (
+            <Link href={`${basePath}/courses/${course._id}`} key={course._id}>
+              <Course
+                course={course}
+                width="w-100"
+                enrolled={enrollments.includes(course._id.toString())}
+                basePath={basePath}
+              />
+            </Link>
           ))
         ) : (
           <p className="col-span-full text-center">No courses available.</p>

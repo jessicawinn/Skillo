@@ -1,8 +1,10 @@
 import React from 'react';
 import Link from 'next/link';
 
-const Course = ({ course, width = "w-72", basePath = ""}) => {
-    const courseLink = `${basePath}/courses/${course._id}`;
+const Course = ({ course, enrolled = false, width = "w-72", basePath = ""}) => {
+    const courseLink = enrolled ? `${basePath}/mylearning` :`${basePath}/courses/${course._id}`;
+    const buttonText = enrolled ? "Go to courses" : "View Courses";
+
     return (
         <div className={`${width} bg-white rounded-lg shadow-md overflow-hidden hover:shadow-xl transition p-4`}>
             <img
@@ -31,7 +33,7 @@ const Course = ({ course, width = "w-72", basePath = ""}) => {
                 <div className="mt-4 flex justify-center">
                     <Link href={courseLink} className="w-[95%]">
                         <button className="w-full bg-purple-700 rounded-2xl text-white py-2 hover:bg-purple-800 transition">
-                            View Course
+                            {buttonText}
                         </button>
                     </Link>
                 </div>

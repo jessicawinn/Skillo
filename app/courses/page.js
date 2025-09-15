@@ -16,7 +16,7 @@ export default function Home() {
         onLoginClick={() => setLoginOpen(true)}
         onSignupClick={() => setSignupOpen(true)} // FIXED
       />
-      <AllCourses basePath=""/>
+      <AllCourses basePath="" fetchEnrollments={false} />
       <Footer />
       <Login
         isOpen={loginOpen}

@@ -1,8 +1,20 @@
+import { serialize } from "cookie";
+
 export async function POST() {
-  // No server session to clear because JWT is stored client-side
-  // Just return a success message
-  return new Response(
+  
+  const cookie = serialize("token", "", {
+    httpOnly: true,
+    path: "/",
+    expires: new Date(0),
+    saneSite: "lax",
+    secure: false
+  });
+
+    return new Response(
     JSON.stringify({ message: "Logout successful" }),
-    { status: 200 }
+    {
+      status: 200,
+      headers: { "Set-Cookie": cookie },
+    }
   );
 }

@@ -8,16 +8,23 @@ export async function GET(req) {
 
         const allCourses = await courses.find({}).toArray();
 
+        const normalizedCourses = allCourses.map(course => ({
+            ...course,
+            _id: course._id.toString(),
+            instructor_id: course.instructor_id?.toString() ?? course.instructor_id,
+        }));
+
+
         return new Response(
             JSON.stringify({
-                courses: allCourses
+                courses: normalizedCourses
             }),
-            {status: 200}
+            { status: 200 }
         )
     } catch (error) {
         console.error(error);
         return new Response(
-            JSON.stringify({message: "Failed to fetch courses"}), {status: 500}
+            JSON.stringify({ message: "Failed to fetch courses" }), { status: 500 }
         )
     }
 }

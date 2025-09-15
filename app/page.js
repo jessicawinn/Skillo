@@ -1,15 +1,128 @@
 "use client";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import LandingNavBar from "@/components/LandingNavBar";
+import { usePathname, useRouter } from "next/navigation";
 import Footer from "@/components/Footer";
 import Login from "@/components/modals/Login";
 import Signup from "@/components/modals/Signup";
 import Image from "next/image";
 import Link from "next/link";
 
+// Mapping of category names to SVG icons
+const categoryIcons = {
+  Programming: (
+    <svg className="w-6 h-6 text-orange-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+      <circle cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="2" fill="none" />
+    </svg>
+  ),
+  Design: (
+    <svg className="w-6 h-6 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
+    </svg>
+  ),
+  "Data Science": (
+    <svg className="w-6 h-6 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
+    </svg>
+  ),
+  Business: (
+    <svg className="w-6 h-6 text-pink-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+    </svg>
+  ),
+  AI: (
+    <svg className="w-6 h-6 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+      <circle cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="2" fill="none" />
+    </svg>
+  ),
+  Marketing: (
+    <svg className="w-6 h-6 text-yellow-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" />
+    </svg>
+  ),
+  Security: (
+    <svg className="w-6 h-6 text-emerald-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
+    </svg>
+  ),
+  Art: (
+    <svg className="w-6 h-6 text-pink-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+      <circle cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="2" fill="none" />
+    </svg>
+  ),
+};
+
 export default function Home() {
   const [loginOpen, setLoginOpen] = useState(false);
   const [signupOpen, setSignupOpen] = useState(false);
+  const pathname = usePathname();
+  const router = useRouter();
+  const [categories, setCategories] = useState([]);
+  const [categoryLoading, setCategoryLoading] = useState(true);
+  const [totalCourses, setTotalCourses] = useState(0);
+  const [totalInstructors, setTotalInstructors] = useState(0);
+
+  useEffect(() => {
+    if (typeof window !== "undefined") {
+      const params = new URLSearchParams(window.location.search);
+      if (params.get("login") === "true") {
+        setLoginOpen(true);
+        // Optionally, remove the query param after opening
+        window.history.replaceState({}, '', '/');
+      }
+    }
+  }, [pathname]);
+
+  useEffect(() => {
+    const fetchCategories = async () => {
+      try {
+        const res = await fetch('/api/courses');
+        if (!res.ok) throw new Error("Failed to fetch courses");
+        const data = await res.json();
+
+        // Group courses by category with counts and first image
+        const categoryMap = {};
+        (data.courses || []).forEach(course => {
+          if (!course.category) return;
+          if (!categoryMap[course.category]) {
+            categoryMap[course.category] = {
+              name: course.category,
+              count: 1,
+              image: course.image_url || null
+            };
+          } else {
+            categoryMap[course.category].count += 1;
+          }
+        });
+
+        setTotalCourses((data.courses || []).length);
+
+        // Convert to array and limit to 5 categories
+        const cats = Object.values(categoryMap).slice(0, 5);
+
+        setCategories(cats);
+      } catch (err) {
+        console.error(err);
+      } finally {
+        setCategoryLoading(false);
+      }
+    };
+    fetchCategories();
+  }, []);
+
+  useEffect(() => {
+    const fetchInstructors = async () => {
+      try {
+        const res = await fetch('api/users?role=instructor');
+        if (!res.ok) throw new Error("Failed to fetch instructors");
+        const data = await res.json();
+        setTotalInstructors((data.users || []).length);
+      } catch (error) {
+        console.error(error);
+      }
+    };
+    fetchInstructors();
+  }, []);
 
   return (
     <>
@@ -43,17 +156,10 @@ export default function Home() {
 
       <div className="bg-purple-700 w-full flex justify-evenly text-white">
         <div className="flex flex-col items-center px-16 py-8">
-          <span className="text-3xl font-bold">200+</span>
+          <span className="text-3xl font-bold">{totalCourses}</span>
           <span className="text-sm opacity-90">Online Course</span>
         </div>
-
-        {/* Vertical divider with custom height */}
-        <div className="h-12 w-px bg-white self-center"></div>
-
-        <div className="flex flex-col items-center px-16 py-8">
-          <span className="text-3xl font-bold">312</span>
-          <span className="text-sm opacity-90">Total Teacher</span>
-        </div>
+        
 
         {/* Vertical divider with custom height */}
         <div className="h-12 w-px bg-white self-center"></div>
@@ -67,21 +173,21 @@ export default function Home() {
         <div className="h-12 w-px bg-white self-center"></div>
 
         <div className="flex flex-col items-center px-16 py-8">
-          <span className="text-3xl font-bold">130+</span>
+          <span className="text-3xl font-bold">{totalInstructors}</span>
           <span className="text-sm opacity-90">Instructors</span>
         </div>
       </div>
 
 
 
-      {/* Category */}
+      {/* Dynamic Category */}
       <div className="max-w-6xl mx-auto mt-30">
         <div className="flex items-center justify-between mb-8">
           <div>
             <p className="text-purple-600 text-sm font-medium mb-2">Popular Category</p>
             <h2 className="text-3xl font-bold text-gray-900">Popular Category For Learn</h2>
           </div>
-          <div className="flex items-center space-x-2">
+          {/* <div className="flex items-center space-x-2">
             <button className="p-2 rounded-full bg-gray-200 hover:bg-gray-300 transition-colors">
               <svg className="w-5 h-5 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path>
@@ -92,70 +198,30 @@ export default function Home() {
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
               </svg>
             </button>
-          </div>
+          </div> */}
         </div>
-
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-4">
-          <div className="bg-white rounded-xl p-6 shadow-sm hover:shadow-md transition-shadow cursor-pointer group">
-            <div className="bg-orange-100 w-12 h-12 rounded-lg flex items-center justify-center mb-4 group-hover:bg-orange-200 transition-colors">
-              <svg className="w-6 h-6 text-orange-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.75 17L9 20l-1 1h8l-1-1-.75-3M3 13h18M5 17h14a2 2 0 002-2V5a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"></path>
-              </svg>
-            </div>
-            <h3 className="text-gray-900 font-semibold mb-2">Computer Science</h3>
-            <p className="text-gray-500 text-sm">11 Course</p>
-          </div>
-
-          <div className="bg-white rounded-xl p-6 shadow-sm hover:shadow-md transition-shadow cursor-pointer group">
-            <div className="bg-purple-100 w-12 h-12 rounded-lg flex items-center justify-center mb-4 group-hover:bg-purple-200 transition-colors">
-              <svg className="w-6 h-6 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"></path>
-              </svg>
-            </div>
-            <h3 className="text-gray-900 font-semibold mb-2">Civil Engineering</h3>
-            <p className="text-gray-500 text-sm">11 Course</p>
-          </div>
-
-          <div className="bg-purple-600 rounded-xl p-6 shadow-sm hover:shadow-md transition-shadow cursor-pointer group">
-            <div className="bg-white w-12 h-12 rounded-lg flex items-center justify-center mb-4">
-              <svg className="w-6 h-6 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.75 17L9 20l-1 1h8l-1-1-.75-3M3 13h18M5 17h14a2 2 0 002-2V5a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"></path>
-              </svg>
-            </div>
-            <h3 className="text-white font-semibold mb-2">Artificial Intelligence</h3>
-            <p className="text-purple-100 text-sm">11 Course</p>
-          </div>
-
-          <div className="bg-white rounded-xl p-6 shadow-sm hover:shadow-md transition-shadow cursor-pointer group">
-            <div className="bg-pink-100 w-12 h-12 rounded-lg flex items-center justify-center mb-4 group-hover:bg-pink-200 transition-colors">
-              <svg className="w-6 h-6 text-pink-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
-              </svg>
-            </div>
-            <h3 className="text-gray-900 font-semibold mb-2">Business Studies</h3>
-            <p className="text-gray-500 text-sm">11 Course</p>
-          </div>
-
-          <div className="bg-white rounded-xl p-6 shadow-sm hover:shadow-md transition-shadow cursor-pointer group">
-            <div className="bg-yellow-100 w-12 h-12 rounded-lg flex items-center justify-center mb-4 group-hover:bg-yellow-200 transition-colors">
-              <svg className="w-6 h-6 text-yellow-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"></path>
-              </svg>
-            </div>
-            <h3 className="text-gray-900 font-semibold mb-2">General Education</h3>
-            <p className="text-gray-500 text-sm">11 Course</p>
-          </div>
-
-
-          <div className="bg-white rounded-xl p-6 shadow-sm hover:shadow-md transition-shadow cursor-pointer group">
-            <div className="bg-emerald-100 w-12 h-12 rounded-lg flex items-center justify-center mb-4 group-hover:bg-emerald-200 transition-colors">
-              <svg className="w-6 h-6 text-emerald-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"></path>
-              </svg>
-            </div>
-            <h3 className="text-gray-900 font-semibold mb-2">Health & Fitness</h3>
-            <p className="text-gray-500 text-sm">11 Course</p>
-          </div>
+          {categoryLoading ? (
+            <div className="col-span-full text-center">Loading categories...</div>
+          ) : categories.length === 0 ? (
+            <div className="col-span-full text-center">No categories found.</div>
+          ) : (
+            categories.map((cat) => (
+              <Link href={`/courses?category=${encodeURIComponent(cat.name)}`} key={cat.name} className="block">
+                <div className="bg-white rounded-xl p-6 shadow-sm hover:shadow-md transition-shadow cursor-pointer group">
+                  <div className={`w-12 h-12 rounded-lg flex items-center justify-center mb-4 ${cat.name === 'Business' ? 'bg-pink-100 group-hover:bg-pink-200' : cat.name === 'Programming' ? 'bg-orange-100 group-hover:bg-orange-200' : cat.name === 'Design' ? 'bg-purple-100 group-hover:bg-purple-200' : cat.name === 'Marketing' ? 'bg-yellow-100 group-hover:bg-yellow-200' : cat.name === 'Security' ? 'bg-emerald-100 group-hover:bg-emerald-200' : 'bg-gray-100 group-hover:bg-gray-200'}`}>
+                    {categoryIcons[cat.name] || (
+                      <svg className="w-6 h-6 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <circle cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="2" fill="none" />
+                      </svg>
+                    )}
+                  </div>
+                  <h3 className="text-gray-900 font-semibold mb-2">{cat.name}</h3>
+                  <p className="text-gray-500 text-sm">{cat.count} courses</p>
+                </div>
+              </Link>
+            ))
+          )}
         </div>
       </div>
 
@@ -270,12 +336,17 @@ export default function Home() {
       <Footer />
       <Login
         isOpen={loginOpen}
-        onClose={() => setLoginOpen(false)}
-        onSwitchToSignup={() => setSignupOpen(true)} // NEW
+        onClose={() => {
+          setLoginOpen(false);
+          router.push("/");
+        }}
+        onSwitchToSignup={() => setSignupOpen(true)}
       />
-      <Signup isOpen={signupOpen}
+      <Signup
+        isOpen={signupOpen}
         onClose={() => setSignupOpen(false)}
-        onSwitchToLogin={() => setLoginOpen(true)} />
+        onSwitchToLogin={() => setLoginOpen(true)}
+      />
     </>
   );
 }

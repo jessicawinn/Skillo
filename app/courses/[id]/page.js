@@ -5,6 +5,7 @@ import { useParams } from "next/navigation";
 import CourseDetails from "@/components/CourseDetails";
 import NavBar from "@/components/NavBar";
 import Footer from "@/components/Footer";
+import LandingNavBar from "@/components/LandingNavBar";
 
 const CoursePage = () => {
   const [course, setCourse] = useState(null);
@@ -60,7 +61,7 @@ const CoursePage = () => {
 
   return (
     <>
-      <NavBar />
+      <LandingNavBar />
       <CourseDetails course={course} />
       <Footer />
     </>
