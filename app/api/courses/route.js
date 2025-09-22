@@ -2,30 +2,35 @@ import clientPromise from "@/lib/mongodb";
 
 export async function GET(req) {
     try {
+        const url = new URL(req.url);
+        const instructorId = url.searchParams.get("instructorId");
+
         const client = await clientPromise;
         const db = client.db("Skillo");
         const courses = db.collection("courses");
 
-        const allCourses = await courses.find({}).toArray();
+        let query = {};
+        if (instructorId) {
+            query = { instructor_id: instructorId };
+        }
 
-        const normalizedCourses = allCourses.map(course => ({
+        const foundCourses = await courses.find(query).toArray();
+
+        const normalizedCourses = foundCourses.map(course => ({
             ...course,
             _id: course._id.toString(),
             instructor_id: course.instructor_id?.toString() ?? course.instructor_id,
         }));
 
-
         return new Response(
-            JSON.stringify({
-                courses: normalizedCourses
-            }),
+            JSON.stringify({ courses: normalizedCourses }),
             { status: 200 }
-        )
+        );
     } catch (error) {
         console.error(error);
         return new Response(
             JSON.stringify({ message: "Failed to fetch courses" }), { status: 500 }
-        )
+        );
     }
 }
 

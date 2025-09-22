@@ -1,0 +1,153 @@
+"use client"
+
+import { useCourses } from "@/lib/course-context"
+import { useRouter } from "next/navigation"
+import { useEffect, useState } from "react"
+import { InstructorStats } from "@/components/dashboard/instructor-stats"
+import { InstructorCourses } from "@/components/dashboard/instructor-courses"
+import { CourseForm } from "@/components/courses/course-form"
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog"
+
+export default function InstructorDashboard() {
+  const { courses, createCourse, updateCourse, deleteCourse } = useCourses()
+  const router = useRouter()
+
+  const [user, setUser] = useState(null)
+  const [instructorCourses, setInstructorCourses] = useState([])
+  const [stats, setStats] = useState({
+    totalCourses: 0,
+    totalStudents: 0,
+    totalRevenue: 0,
+    averageRating: 0,
+  })
+  const [showCourseForm, setShowCourseForm] = useState(false)
+  const [editingCourse, setEditingCourse] = useState(null)
+
+  // Get user from sessionStorage
+  useEffect(() => {
+    if (typeof window !== "undefined") {
+      const userId = sessionStorage.getItem("userId")
+      const name = sessionStorage.getItem("name")
+      const role = sessionStorage.getItem("role")
+      if (userId && role === "instructor") {
+        setUser({ id: userId, name, role })
+      }
+    }
+  }, [])
+
+  // Fetch instructor courses
+  useEffect(() => {
+    if (!user) return
+    const fetchCourses = async () => {
+      try {
+        const res = await fetch(`/api/courses?instructorId=${user.id}`)
+        const data = await res.json()
+        setInstructorCourses(data.courses || [])
+      } catch (error) {
+        setInstructorCourses([])
+      }
+    }
+    fetchCourses()
+  }, [user])
+
+  // Update stats whenever courses change
+  useEffect(() => {
+    const totalCourses = instructorCourses.length
+    const totalStudents = instructorCourses.reduce((acc, c) => acc + (c.enrolledStudents || 0), 0)
+    const totalRevenue = instructorCourses.reduce((acc, c) => acc + (c.price || 0) * (c.enrolledStudents || 0), 0)
+    const averageRating = instructorCourses.length
+      ? instructorCourses.reduce((acc, c) => acc + (c.rating || 0), 0) / instructorCourses.length
+      : 0
+
+    setStats({ totalCourses, totalStudents, totalRevenue, averageRating })
+  }, [instructorCourses])
+
+  // Handlers
+  const handleCreateCourse = () => {
+    setEditingCourse(null)
+    setShowCourseForm(true)
+  }
+
+  const handleEditCourse = (course) => {
+    setEditingCourse(course)
+    setShowCourseForm(true)
+  }
+
+  const handleDeleteCourse = (courseId) => {
+    if (confirm("Are you sure you want to delete this course? This action cannot be undone.")) {
+      deleteCourse(courseId)
+      setInstructorCourses(prev => prev.filter(c => c.id !== courseId))
+    }
+  }
+
+  const handleViewCourse = (courseId) => {
+    router.push(`/instructor/courses/${courseId}`)
+  }
+
+  const handleSubmitCourse = (courseData) => {
+    if (editingCourse) {
+      updateCourse(editingCourse.id, courseData)
+      setInstructorCourses(prev =>
+        prev.map(c => (c.id === editingCourse.id ? { ...c, ...courseData } : c))
+      )
+    } else {
+      const newCourse = {
+        ...courseData,
+        instructorId: user.id,
+        instructorName: user.name,
+      }
+      createCourse(newCourse)
+      setInstructorCourses(prev => [...prev, newCourse])
+    }
+    setShowCourseForm(false)
+    setEditingCourse(null)
+  }
+
+  const handleCancelCourse = () => {
+    setShowCourseForm(false)
+    setEditingCourse(null)
+  }
+
+  return (
+    <>
+      <div className="mb-8">
+        <h1 className="text-3xl font-bold text-balance">Instructor Dashboard</h1>
+        <p className="text-muted-foreground mt-2">Manage your courses and track your teaching performance</p>
+      </div>
+
+      <div className="space-y-8">
+        {/* Stats */}
+        <div className="shadow-lg rounded-xl bg-white p-6">
+          <InstructorStats {...stats} />
+        </div>
+
+        {/* Courses */}
+        <div className="shadow-lg rounded-xl bg-white p-6">
+          <InstructorCourses
+            courses={instructorCourses}
+            onEdit={handleEditCourse}
+            onDelete={handleDeleteCourse}
+            onView={handleViewCourse}
+            onCreate={handleCreateCourse}
+          />
+        </div>
+      </div>
+
+      {/* Course Form Dialog */}
+      {showCourseForm && (
+        <Dialog open={showCourseForm} onOpenChange={setShowCourseForm}>
+          <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto shadow-2xl rounded-xl bg-white">
+            <DialogHeader>
+              <DialogTitle>{editingCourse ? "Edit Course" : "Create Course"}</DialogTitle>
+            </DialogHeader>
+            <CourseForm
+              course={editingCourse || null}
+              onSubmit={handleSubmitCourse}
+              onCancel={handleCancelCourse}
+            />
+          </DialogContent>
+        </Dialog>
+      )}
+    </>
+  )
+}

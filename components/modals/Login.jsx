@@ -56,7 +56,7 @@ const Login = ({ isOpen, onClose, onSwitchToSignup }) => {
         if (data.role === "student") {
           router.push("/student");
         } else if (data.role === "instructor") {
-          router.push("/instructor");
+          router.push("/instructor/dashboard");
         } else {
           router.push("/");
         }

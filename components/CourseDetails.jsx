@@ -15,7 +15,9 @@ const CourseDetails = ({ course }) => {
         const res = await fetch(`/api/courses/${course._id}/lessons`);
         if (!res.ok) throw new Error("Failed to fetch lessons");
         const data = await res.json();
-        setLessons(data.lessons || []);
+        // Sort lessons by order in ascending order
+        const sortedLessons = (data.lessons || []).sort((a, b) => (a.order || 0) - (b.order || 0));
+        setLessons(sortedLessons);
       } catch (err) {
         console.error(err);
       } finally {
@@ -166,12 +168,13 @@ const CourseDetails = ({ course }) => {
                   {lesson.title}
                 </summary>
                 <div className="px-4 py-2 text-gray-700">
-                  {lesson.contents.map((content, cidx) => (
-                    <div key={cidx} className="mt-2">
-                      <p className="font-semibold">{content.title}</p>
-                      <p className="text-sm">{content.text}</p>
-                    </div>
-                  ))}
+                  <ul className="list-disc list-inside space-y-1">
+                    {lesson.contents.map((content, cidx) => (
+                      <li key={cidx} className="mt-1">
+                        <span className="font-semibold">{content.title}</span>
+                      </li>
+                    ))}
+                  </ul>
                 </div>
               </details>
             ))}

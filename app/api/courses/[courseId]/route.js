@@ -5,8 +5,25 @@ import { ObjectId } from "mongodb";
 export async function PUT(req, { params }) {
   const { courseId } = params;
   const body = await req.json();
-  const { category, level, learningPoints, tools } = body;
 
+  // List all fields you want to allow updating (except enrolledStudents)
+  const {
+    title,
+    description,
+    category,
+    level,
+    price,
+    thumbnail,
+    learningPoints,
+    tools,
+    status,
+    rating,
+    duration,
+    instructorId,
+    instructorName
+  } = body;
+
+  // Validate required fields
   if (!category || !level) {
     return new Response(
       JSON.stringify({ message: "Category and level required" }),
@@ -18,21 +35,27 @@ export async function PUT(req, { params }) {
   const db = client.db("Skillo");
   const courses = db.collection("courses");
 
-  // Validate learningPoints and tools as arrays
-  const validatedLearningPoints = Array.isArray(learningPoints) ? learningPoints : [];
-  const validatedTools = Array.isArray(tools) ? tools : [];
+  // Build update object dynamically
+  const updateFields = {
+    ...(title && { title }),
+    ...(description && { description }),
+    ...(category && { category }),
+    ...(level && { level }),
+    ...(price !== undefined && { price }),
+    ...(thumbnail && { thumbnail }),
+    ...(Array.isArray(learningPoints) && { learningPoints }),
+    ...(Array.isArray(tools) && { tools }),
+    ...(status && { status }),
+    ...(rating !== undefined && { rating }),
+    ...(duration && { duration }),
+    ...(instructorId && { instructorId }),
+    ...(instructorName && { instructorName }),
+    updatedAt: new Date(),
+  };
 
   const result = await courses.updateOne(
     { _id: new ObjectId(courseId) },
-    {
-      $set: {
-        category,
-        level,
-        learningPoints: validatedLearningPoints,
-        tools: validatedTools,
-        updatedAt: new Date(),
-      },
-    }
+    { $set: updateFields }
   );
 
   if (result.matchedCount === 0) {
@@ -64,4 +87,23 @@ export async function GET(req, { params }) {
     console.error(error);
     return new Response(JSON.stringify({ message: "Internal Server Error" }), { status: 500 });
   }
+}
+
+
+export async function DELETE(req, { params }) {
+  const { courseId } = params;
+  const client = await clientPromise;
+  const db = client.db("Skillo");
+  const courses = db.collection("courses");
+
+  const result = await courses.deleteOne({ _id: new ObjectId(courseId) });
+
+  if (result.deletedCount === 0) {
+    return new Response(
+      JSON.stringify({ message: "Course not found" }),
+      { status: 404 }
+    );
+  }
+
+  return new Response(JSON.stringify({ message: "Course deleted" }), { status: 200 });
 }

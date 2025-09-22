@@ -12,23 +12,97 @@ const MyLearning = () => {
     const fetchEnrolledCourses = async () => {
       try {
         const userId = sessionStorage.getItem("userId");
-        if (!userId) return;
+        if (!userId) {
+          console.error("No userId found in sessionStorage");
+          return;
+        }
 
         const res = await fetch(`/api/enrollments?userId=${userId}`);
         const data = await res.json();
 
         if (res.ok && data.enrollments) {
+          console.log("Fetched enrollments:", data.enrollments); // Debug log
+          
+          // Use the populated course data from enrollments API
           const enrolledCourses = await Promise.all(
-            data.enrollments.map(async (enroll) => {
-              const courseRes = await fetch(`/api/courses/${enroll.courseId}`);
-              const courseData = await courseRes.json();
-              return { ...courseData.course, progress: 0 }; // you can compute progress later
-            })
+            data.enrollments
+              .filter(enrollment => {
+                if (!enrollment.course) {
+                  console.warn("Enrollment missing course data:", enrollment);
+                  return false;
+                }
+                if (!enrollment.course._id) {
+                  console.warn("Course missing _id:", enrollment.course);
+                  return false;
+                }
+                return true;
+              })
+              .map(async (enrollment) => {
+                console.log("Processing course:", enrollment.course._id, enrollment.course.title); // Debug log
+                
+                // Calculate real progress from database
+                let progress = 0;
+                try {
+                  // Get user progress for this course
+                  const progressRes = await fetch(`/api/progress?userId=${userId}&courseId=${enrollment.course._id}`);
+                  // Get lessons to count total contents
+                  const lessonsRes = await fetch(`/api/courses/${enrollment.course._id}/lessons`);
+                  
+                  if (progressRes.ok && lessonsRes.ok) {
+                    const progressData = await progressRes.json();
+                    const lessonsData = await lessonsRes.json();
+                    
+                    // Get valid lesson IDs
+                    const validLessonIds = new Set(lessonsData.lessons.map(lesson => lesson._id));
+                    
+                    // Filter progress to only include entries for lessons that exist
+                    const validProgress = progressData.progress.filter(p => validLessonIds.has(p.lessonId));
+                    
+                    // Count total content items
+                    const totalContents = (lessonsData.lessons || []).reduce(
+                      (total, lesson) => total + (lesson.contents?.length || 0), 
+                      0
+                    );
+                    
+                    // Count valid completed content items
+                    const completedContents = validProgress.length;
+                    
+                    // Calculate percentage
+                    progress = totalContents > 0 ? Math.round((completedContents / totalContents) * 100) : 0;
+                    
+                    console.log(`=== PROGRESS CALCULATION FOR ${enrollment.course.title} ===`);
+                    console.log(`Total progress entries: ${progressData.progress.length}`);
+                    console.log(`Valid progress entries: ${completedContents}`);
+                    console.log(`Invalid entries filtered out: ${progressData.progress.length - completedContents}`);
+                    console.log(`Total contents: ${totalContents}`);
+                    console.log(`Raw percentage: ${(completedContents / totalContents) * 100}`);
+                    console.log(`Rounded percentage: ${progress}%`);
+                    console.log(`Valid lesson IDs:`, Array.from(validLessonIds));
+                    console.log(`Valid progress entries:`, validProgress.map(p => `${p.contentTitle} (${p.lessonId}:${p.contentIndex})`));
+                    console.log(`=== END CALCULATION ===`);
+                  } else {
+                    console.error('Failed to fetch progress or lessons data');
+                  }
+                } catch (error) {
+                  console.error('Error calculating progress for course:', enrollment.course._id, error);
+                  progress = 0; // Default to 0 if calculation fails
+                }
+                
+                return { 
+                  ...enrollment.course, 
+                  progress,
+                  enrollmentId: enrollment._id 
+                };
+              })
           );
+          
+          console.log("Final enrolled courses:", enrolledCourses); // Debug log
           setCourses(enrolledCourses);
+        } else {
+          console.error("Failed to fetch enrollments:", data.message || "Unknown error");
         }
       } catch (err) {
-        console.error(err);
+        console.error("Error fetching enrolled courses:", err);
       } finally {
         setLoading(false);
       }
