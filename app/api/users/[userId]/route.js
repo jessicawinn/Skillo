@@ -1,9 +1,11 @@
 import clientPromise from "@/lib/mongodb";
 import { ObjectId } from "mongodb";
 
-// GET a specific user
+// GET a specific user or instructor stats
 export async function GET(req, context) {
   const { userId } = await context.params;
+  const url = new URL(req.url);
+  const getStats = url.searchParams.get("stats");
 
   if (!userId) {
     return new Response(
@@ -15,6 +17,60 @@ export async function GET(req, context) {
   try {
     const client = await clientPromise;
     const db = client.db("Skillo");
+    
+        // If stats=true, return instructor statistics
+    if (getStats === "true") {
+      const coursesCollection = db.collection("courses");
+      const enrollmentsCollection = db.collection("enrollments");
+
+      // Get all courses by this instructor - using instructor_id not instructorId
+      const courses = await coursesCollection
+        .find({ instructor_id: userId })
+        .toArray();
+
+      if (courses.length === 0) {
+        return new Response(
+          JSON.stringify({
+            totalCourses: 0,
+            totalStudents: 0,
+            totalRevenue: 0
+          }),
+          { status: 200 }
+        );
+      }
+
+      const courseIds = courses.map(course => course._id);
+
+      // Get all enrollments for these courses
+      const enrollments = await enrollmentsCollection
+        .find({ courseId: { $in: courseIds } })
+        .toArray();
+
+      // Calculate stats
+      const totalCourses = courses.length;
+      const totalStudents = enrollments.length; // Each enrollment = 1 student
+      
+      // Calculate total revenue from enrollments
+      let totalRevenue = 0;
+      for (const enrollment of enrollments) {
+        const course = courses.find(c => c._id.toString() === enrollment.courseId.toString());
+        if (course && course.price) {
+          // Convert price to number to avoid string concatenation
+          totalRevenue += Number(course.price);
+        }
+      }
+
+      return new Response(
+        JSON.stringify({
+          totalCourses,
+          totalStudents,
+          totalRevenue
+        }),
+        { status: 200 }
+      );
+    }
+
+    // Regular user fetch
     const usersCollection = db.collection("users");
 
     const user = await usersCollection.findOne(

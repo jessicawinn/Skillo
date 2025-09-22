@@ -47,8 +47,8 @@ export function InstructorNav() {
         <nav className="flex items-center justify-between">
           <div className="flex items-center space-x-6">
             <div className="flex items-center space-x-2">
-              <BookOpen className="h-6 w-6 text-blue-600" />
-              <h1 className="text-xl font-bold text-blue-600">Skillio</h1>
+              <BookOpen className="h-6 w-6 text-purple-700" />
+              <h1 className="text-xl font-bold text-purple-700">Skillio</h1>
             </div>
             <div className="hidden md:flex items-center space-x-4">
               <Button variant="ghost" onClick={() => router.push("/instructor/dashboard")}> <BarChart3 className="h-4 w-4 mr-2" /> Dashboard </Button>

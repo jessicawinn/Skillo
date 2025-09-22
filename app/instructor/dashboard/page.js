@@ -18,7 +18,6 @@ export default function InstructorDashboard() {
     totalCourses: 0,
     totalStudents: 0,
     totalRevenue: 0,
-    averageRating: 0,
   })
   const [showCourseForm, setShowCourseForm] = useState(false)
   const [editingCourse, setEditingCourse] = useState(null)
@@ -35,32 +34,34 @@ export default function InstructorDashboard() {
     }
   }, [])
 
-  // Fetch instructor courses
+  // Fetch instructor courses and stats
   useEffect(() => {
     if (!user) return
-    const fetchCourses = async () => {
+    
+    const fetchData = async () => {
       try {
-        const res = await fetch(`/api/courses?instructorId=${user.id}`)
-        const data = await res.json()
-        setInstructorCourses(data.courses || [])
+        // Fetch courses
+        const coursesRes = await fetch(`/api/courses?instructorId=${user.id}`)
+        const coursesData = await coursesRes.json()
+        setInstructorCourses(coursesData.courses || [])
+
+        // Fetch real stats based on enrollments
+        const statsRes = await fetch(`/api/users/${user.id}?stats=true`)
+        const statsData = await statsRes.json()
+        setStats(statsData)
       } catch (error) {
+        console.error('Error fetching instructor data:', error)
         setInstructorCourses([])
+        setStats({
+          totalCourses: 0,
+          totalStudents: 0,
+          totalRevenue: 0,
+        })
       }
     }
-    fetchCourses()
+    
+    fetchData()
   }, [user])
-
-  // Update stats whenever courses change
-  useEffect(() => {
-    const totalCourses = instructorCourses.length
-    const totalStudents = instructorCourses.reduce((acc, c) => acc + (c.enrolledStudents || 0), 0)
-    const totalRevenue = instructorCourses.reduce((acc, c) => acc + (c.price || 0) * (c.enrolledStudents || 0), 0)
-    const averageRating = instructorCourses.length
-      ? instructorCourses.reduce((acc, c) => acc + (c.rating || 0), 0) / instructorCourses.length
-      : 0
-
-    setStats({ totalCourses, totalStudents, totalRevenue, averageRating })
-  }, [instructorCourses])
 
   // Handlers
   const handleCreateCourse = () => {
