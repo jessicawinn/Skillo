@@ -2,7 +2,7 @@
 
 import { useParams, useRouter } from "next/navigation"
 import { useState, useEffect } from "react"
-import { ArrowLeft, Plus, Edit } from "lucide-react"
+import { ArrowLeft, Plus, Edit, Users, DollarSign, Star, BookOpen, Clock, Eye, Trash2 } from "lucide-react"
 import { CourseForm } from "@/components/courses/course-form";
 import { LessonForm } from "@/components/lessons/lesson-form";
 
@@ -15,7 +15,6 @@ const demoCourses = [
     students: 42,
     rating: 4.7,
     price: 49,
-    isPublished: true,
     thumbnail:
       "https://images.unsplash.com/photo-1506744038136-46273834b3fb?auto=format&fit=crop&w=400&q=80",
     lessons: [],
@@ -28,7 +27,6 @@ const demoCourses = [
     students: 20,
     rating: 4.9,
     price: 79,
-    isPublished: false,
     thumbnail:
       "https://images.unsplash.com/photo-1556157382-97eda2d62296?auto=format&fit=crop&w=400&q=80",
     lessons: [],
@@ -240,114 +238,189 @@ export default function CoursePage() {
   return (
     <div className="min-h-screen bg-gray-50">
       <main className="container mx-auto px-4 py-8">
-        {/* Back */}
+        {/* Back Button */}
         <button
           onClick={() => router.push("/instructor/courses")}
-          className="flex items-center gap-2 px-3 py-2 border rounded hover:bg-gray-100"
+          className="inline-flex items-center gap-2 px-4 py-2 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 hover:border-gray-400 transition-all duration-200 shadow-sm hover:shadow-md font-medium text-gray-700"
         >
           <ArrowLeft className="h-4 w-4" />
           Back to Courses
         </button>
 
-        {/* Course Card */}
-        <div className="bg-white shadow rounded mt-6">
-          <img
-            src={course.thumbnail || "/placeholder.svg"}
-            alt={course.title}
-            className="w-full h-64 object-cover rounded-t"
-          />
-          <div className="p-6">
-            <div className="flex justify-between">
-              <div>
-                <span className={`px-2 py-1 text-sm rounded ${getLevelColor(course.level)}`}>
-                  {course.level}
-                </span>
-                {!course.isPublished && (
-                  <span className="ml-2 px-2 py-1 text-sm bg-gray-200 rounded">Draft</span>
-                )}
-                <h2 className="text-2xl font-bold mt-2">{course.title}</h2>
-                <p className="mt-2 text-gray-600">{course.description}</p>
+        {/* Course Hero Section */}
+        <div className="bg-white rounded-2xl shadow-xl overflow-hidden mt-6">
+          <div className="relative">
+            <img
+              src={course.thumbnail || "/placeholder.svg"}
+              alt={course.title}
+              className="w-full h-80 object-cover"
+            />
+            <div className="absolute inset-0 bg-black/50"></div>
+            <div className="absolute bottom-6 left-6 right-6">
+              <div className="flex items-center justify-between">
+                <div>
+                  <span className={`inline-flex items-center px-3 py-1 rounded-full text-sm font-medium ${getLevelColor(course.level)} shadow-lg`}>
+                    {course.level}
+                  </span>
+                  <h1 className="text-3xl font-bold text-white mt-2 drop-shadow-lg">{course.title}</h1>
+                </div>
+                <button
+                  onClick={handleEditCourse}
+                  className="inline-flex items-center gap-2 px-6 py-3 bg-white/90 backdrop-blur-sm text-gray-900 rounded-lg hover:bg-white transition-all duration-200 font-semibold shadow-lg hover:shadow-xl"
+                >
+                  <Edit className="h-4 w-4" /> 
+                  Edit Course
+                </button>
               </div>
-              <button
-                onClick={handleEditCourse}
-                className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700"
-              >
-                <Edit className="h-4 w-4" /> Edit Course
-              </button>
             </div>
+          </div>
+          
+          <div className="p-8">
+            <p className="text-gray-600 text-lg leading-relaxed mb-8">{course.description}</p>
 
-            {/* Stats */}
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mt-6">
-              <div>
-                <p className="font-medium">Students</p>
-                <p>{course.students}</p>
+            {/* Enhanced Stats Grid */}
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+              <div className="bg-purple-50 rounded-xl p-6 border border-purple-200">
+                <div className="flex items-center gap-3 mb-2">
+                  <div className="p-2 bg-purple-600 rounded-lg">
+                    <Users className="h-5 w-5 text-white" />
+                  </div>
+                  <span className="text-purple-700 font-medium">Students</span>
+                </div>
+                <p className="text-2xl font-bold text-purple-900">{course.students || 0}</p>
+                <p className="text-purple-600 text-sm">Enrolled</p>
               </div>
-              <div>
-                <p className="font-medium">Price</p>
-                <p>${course.price}</p>
+              
+              <div className="bg-purple-50 rounded-xl p-6 border border-purple-200">
+                <div className="flex items-center gap-3 mb-2">
+                  <div className="p-2 bg-purple-600 rounded-lg">
+                    <DollarSign className="h-5 w-5 text-white" />
+                  </div>
+                  <span className="text-purple-700 font-medium">Price</span>
+                </div>
+                <p className="text-2xl font-bold text-purple-900">${course.price || 0}</p>
+                <p className="text-purple-600 text-sm">Per enrollment</p>
               </div>
-              <div>
-                <p className="font-medium">Rating</p>
-                <p>{course.rating}/5</p>
-              </div>
-              <div>
-                <p className="font-medium">Lessons</p>
-                <p>{lessons.length}</p>
+              
+              <div className="bg-purple-50 rounded-xl p-6 border border-purple-200">
+                <div className="flex items-center gap-3 mb-2">
+                  <div className="p-2 bg-purple-600 rounded-lg">
+                    <BookOpen className="h-5 w-5 text-white" />
+                  </div>
+                  <span className="text-purple-700 font-medium">Lessons</span>
+                </div>
+                <p className="text-2xl font-bold text-purple-900">{lessons.length}</p>
+                <p className="text-purple-600 text-sm">Total content</p>
               </div>
             </div>
           </div>
         </div>
 
-        {/* Lessons */}
-        <div className="bg-white shadow rounded mt-8 p-6">
-          <div className="flex justify-between items-center">
-            <div>
-              <h3 className="text-lg font-semibold">Course Lessons</h3>
-              <p className="text-gray-500">Manage your course content</p>
+        {/* Enhanced Lessons Section */}
+        <div className="bg-white rounded-2xl shadow-xl mt-8 overflow-hidden">
+          <div className="bg-purple-600 px-8 py-6">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-3">
+                <div className="p-2 bg-white/20 rounded-lg">
+                  <BookOpen className="h-6 w-6 text-white" />
+                </div>
+                <div>
+                  <h3 className="text-2xl font-bold text-white">Course Lessons</h3>
+                  <p className="text-purple-100">Manage your course content and structure</p>
+                </div>
+              </div>
+              <button
+                onClick={handleCreateLesson}
+                className="inline-flex items-center gap-2 px-6 py-3 bg-white/90 backdrop-blur-sm text-purple-900 rounded-lg hover:bg-white transition-all duration-200 font-semibold shadow-lg hover:shadow-xl"
+              >
+                <Plus className="h-4 w-4" /> 
+                Add Lesson
+              </button>
             </div>
-            <button
-              onClick={handleCreateLesson}
-              className="flex items-center gap-2 px-4 py-2 bg-green-600 text-white rounded hover:bg-green-700"
-            >
-              <Plus className="h-4 w-4" /> Add Lesson
-            </button>
           </div>
 
-          {lessons.length === 0 ? (
-            <p className="text-gray-500 mt-4">No lessons yet. Add one!</p>
-          ) : (
-            <ul className="mt-4 space-y-3">
-              {lessons.map((lesson) => (
-                <li
-                  key={lesson.id}
-                  className="flex justify-between items-center border p-3 rounded"
+          <div className="p-8">
+            {lessons.length === 0 ? (
+              <div className="text-center py-12">
+                <div className="p-4 bg-gray-100 rounded-full w-16 h-16 mx-auto mb-4 flex items-center justify-center">
+                  <BookOpen className="h-8 w-8 text-gray-400" />
+                </div>
+                <h4 className="text-lg font-semibold text-gray-900 mb-2">No lessons yet</h4>
+                <p className="text-gray-500 mb-6">Start building your course by adding your first lesson</p>
+                <button
+                  onClick={handleCreateLesson}
+                  className="inline-flex items-center gap-2 px-6 py-3 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-all duration-200 font-semibold shadow-lg hover:shadow-xl"
                 >
-                  <span>{lesson.title || `Lesson ${lesson.id}`}</span>
-                  <div className="space-x-2">
-                    <button
-                      onClick={() => handleEditLesson(lesson)}
-                      className="px-3 py-1 text-sm bg-blue-500 text-white rounded hover:bg-blue-600"
+                  <Plus className="h-4 w-4" />
+                  Create First Lesson
+                </button>
+              </div>
+            ) : (
+              <div className="space-y-4">
+                {lessons
+                  .sort((a, b) => (a.order || 0) - (b.order || 0))
+                  .map((lesson, index) => (
+                    <div
+                      key={lesson.id || lesson._id}
+                      className="bg-gray-50 border border-gray-200 rounded-xl p-6 hover:shadow-md transition-all duration-200"
                     >
-                      Edit
-                    </button>
-                    <button
-                      onClick={() => handleDeleteLesson(lesson.id)}
-                      className="px-3 py-1 text-sm bg-red-500 text-white rounded hover:bg-red-600"
-                    >
-                      Delete
-                    </button>
-                  </div>
-                </li>
-              ))}
-            </ul>
-          )}
+                      <div className="flex items-center justify-between">
+                        <div className="flex items-center gap-4">
+                          <div className="flex items-center justify-center w-10 h-10 bg-purple-100 text-purple-600 rounded-full font-bold">
+                            {lesson.order || index + 1}
+                          </div>
+                          <div>
+                            <h4 className="text-lg font-semibold text-gray-900">
+                              {lesson.title || `Lesson ${lesson.id}`}
+                            </h4>
+                            <div className="flex items-center gap-4 text-sm text-gray-500 mt-1">
+                              <span className="flex items-center gap-1">
+                                <Clock className="h-3 w-3" />
+                                {lesson.contents?.length || 0} content sections
+                              </span>
+                              <span className="flex items-center gap-1">
+                                <Eye className="h-3 w-3" />
+                                Lesson {lesson.order || index + 1}
+                              </span>
+                            </div>
+                          </div>
+                        </div>
+                        <div className="flex gap-2">
+                          <button
+                            onClick={() => handleEditLesson(lesson)}
+                            className="inline-flex items-center gap-1 px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-all duration-200 font-medium shadow-sm hover:shadow-md"
+                          >
+                            <Edit className="h-3 w-3" />
+                            Edit
+                          </button>
+                          <button
+                            onClick={() => handleDeleteLesson(lesson.id)}
+                            className="inline-flex items-center gap-1 px-4 py-2 bg-red-500 text-white rounded-lg hover:bg-red-600 transition-all duration-200 font-medium shadow-sm hover:shadow-md"
+                          >
+                            <Trash2 className="h-3 w-3" />
+                            Delete
+                          </button>
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+              </div>
+            )}
+          </div>
         </div>
       </main>
 
-      {/* Edit Course Modal using CourseForm */}
+      {/* Enhanced Edit Course Modal */}
       {showEditCourseForm && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center overflow-y-auto p-4">
-          <div className="bg-white w-full max-w-2xl p-6 rounded shadow">
+        <div 
+          className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-start justify-center p-4 z-50 overflow-y-auto"
+          onClick={(e) => {
+            if (e.target === e.currentTarget) {
+              handleCancelEditCourse();
+            }
+          }}
+        >
+          <div className="w-full max-w-5xl my-8">
             <CourseForm
               course={course}
               onSubmit={handleSubmitEditCourse}
@@ -357,11 +430,18 @@ export default function CoursePage() {
         </div>
       )}
 
-      {/* Lesson Modal */}
+      {/* Enhanced Lesson Modal */}
       {showLessonForm && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center overflow-y-auto p-4">
-          <div className="bg-white w-full max-w-2xl p-6 rounded shadow">
-            {/* Use LessonForm component for lesson creation/editing */}
+        <div 
+          className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-start justify-center p-4 z-50 overflow-y-auto"
+          onClick={(e) => {
+            if (e.target === e.currentTarget) {
+              setShowLessonForm(false);
+              setEditingLesson(null);
+            }
+          }}
+        >
+          <div className="w-full max-w-5xl my-8">
             <LessonForm
               lesson={editingLesson}
               courseId={courseId}

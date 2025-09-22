@@ -1,20 +1,11 @@
 "use client";
 import { useEffect, useState } from "react";
-import { Button } from "@/components/ui/button";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuLabel,
-  DropdownMenuSeparator,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
-import { BookOpen, Plus, BarChart3, User, LogOut, TrendingUp } from "lucide-react";
+import { BookOpen, Plus, BarChart3, User, LogOut, ChevronDown } from "lucide-react";
 import { useRouter } from "next/navigation";
 
 export function InstructorNav() {
   const [user, setUser] = useState(null);
+  const [dropdownOpen, setDropdownOpen] = useState(false);
   const router = useRouter();
 
   useEffect(() => {
@@ -42,7 +33,7 @@ export function InstructorNav() {
   if (!user) return null;
 
   return (
-    <header className="border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
+    <header className="border-b bg-white shadow-sm">
       <div className="container mx-auto px-4 py-3">
         <nav className="flex items-center justify-between">
           <div className="flex items-center space-x-6">
@@ -51,32 +42,76 @@ export function InstructorNav() {
               <h1 className="text-xl font-bold text-purple-700">Skillio</h1>
             </div>
             <div className="hidden md:flex items-center space-x-4">
-              <Button variant="ghost" onClick={() => router.push("/instructor/dashboard")}> <BarChart3 className="h-4 w-4 mr-2" /> Dashboard </Button>
-              <Button variant="ghost" onClick={() => router.push("/instructor/courses")}> Courses </Button>
-              <Button onClick={() => router.push("/instructor/courses/new")}> <Plus className="h-4 w-4 mr-2" /> Create Course </Button>
+              <button 
+                onClick={() => router.push("/instructor/dashboard")}
+                className="inline-flex items-center px-3 py-2 text-sm font-medium text-gray-700 hover:bg-gray-100 rounded-md transition-colors"
+              >
+                <BarChart3 className="h-4 w-4 mr-2" /> Dashboard
+              </button>
+              <button 
+                onClick={() => router.push("/instructor/courses")}
+                className="inline-flex items-center px-3 py-2 text-sm font-medium text-gray-700 hover:bg-gray-100 rounded-md transition-colors"
+              >
+                Courses
+              </button>
+              <button 
+                onClick={() => router.push("/instructor/courses/new")}
+                className="inline-flex items-center px-4 py-2 text-sm font-medium text-white bg-purple-600 hover:bg-purple-700 rounded-md transition-colors"
+              >
+                <Plus className="h-4 w-4 mr-2" /> Create Course
+              </button>
             </div>
           </div>
-          <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-              <Button variant="ghost" className="relative h-8 w-8 rounded-full">
-                <Avatar className="h-8 w-8">
-                  <AvatarImage src={user.avatar} alt={user.name} />
-                  <AvatarFallback>{user.name.charAt(0)}</AvatarFallback>
-                </Avatar>
-              </Button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent className="w-56" align="end" forceMount>
-              <DropdownMenuLabel className="font-normal">
-                <div className="flex flex-col space-y-1">
-                  <span className="text-sm font-medium leading-none">{user.name}</span>
-                  <span className="text-xs leading-none text-muted-foreground">{user.email}</span>
+          
+          <div className="relative">
+            <button
+              onClick={() => setDropdownOpen(!dropdownOpen)}
+              className="flex items-center space-x-2 p-2 rounded-full hover:bg-gray-100 transition-colors"
+            >
+              <div className="h-8 w-8 rounded-full bg-purple-600 flex items-center justify-center text-white font-medium">
+                {user.name.charAt(0)}
+              </div>
+              <ChevronDown className="h-4 w-4 text-gray-500" />
+            </button>
+            
+            {dropdownOpen && (
+              <div className="absolute right-0 mt-2 w-56 bg-white rounded-lg shadow-lg border z-50">
+                <div className="px-4 py-3 border-b">
+                  <div className="flex flex-col space-y-1">
+                    <span className="text-sm font-medium text-gray-900">{user.name}</span>
+                    <span className="text-xs text-gray-500">{user.email}</span>
+                  </div>
                 </div>
-              </DropdownMenuLabel>
-              <DropdownMenuSeparator />
-              <DropdownMenuItem onClick={() => router.push("/instructor/profile")}> <User className="h-4 w-4 mr-2" /> Profile </DropdownMenuItem>
-              <DropdownMenuItem onClick={handleLogout}> <LogOut className="h-4 w-4 mr-2" /> Logout </DropdownMenuItem>
-            </DropdownMenuContent>
-          </DropdownMenu>
+                <div className="py-1">
+                  <button
+                    onClick={() => {
+                      router.push("/instructor/profile");
+                      setDropdownOpen(false);
+                    }}
+                    className="flex items-center w-full px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 transition-colors"
+                  >
+                    <User className="h-4 w-4 mr-2" /> Profile
+                  </button>
+                  <button
+                    onClick={() => {
+                      handleLogout();
+                      setDropdownOpen(false);
+                    }}
+                    className="flex items-center w-full px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 transition-colors"
+                  >
+                    <LogOut className="h-4 w-4 mr-2" /> Logout
+                  </button>
+                </div>
+              </div>
+            )}
+            
+            {dropdownOpen && (
+              <div 
+                className="fixed inset-0 z-40" 
+                onClick={() => setDropdownOpen(false)}
+              ></div>
+            )}
+          </div>
         </nav>
       </div>
     </header>
