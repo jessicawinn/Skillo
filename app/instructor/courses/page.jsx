@@ -335,21 +335,23 @@ export default function InstructorCoursesPage() {
 
       {/* Edit Course Modal */}
       {showCourseForm && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-          <div className="bg-white rounded-lg w-full max-w-3xl max-h-[90vh] overflow-y-auto p-6">
-            <h2 className="text-xl font-semibold mb-4">
-              {editingCourse ? "Edit Course" : "Create New Course"}
-            </h2>
-            {editLoading ? (
-              <div className="text-center py-8 text-gray-500">Loading course data...</div>
-            ) : (
-              <CourseForm 
-                course={editingCourse} 
-                onSubmit={handleSubmitCourse} 
-                onCancel={handleCancelCourse} 
-              />
-            )}
-          </div>
+        <div 
+          className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-start justify-center p-4 z-50 overflow-y-auto"
+          onClick={e => {
+            if (e.target === e.currentTarget) {
+              handleCancelCourse();
+            }
+          }}
+        >
+          {editLoading ? (
+            <div className="text-center py-8 text-gray-500">Loading course data...</div>
+          ) : (
+            <CourseForm 
+              course={editingCourse} 
+              onSubmit={handleSubmitCourse} 
+              onCancel={handleCancelCourse} 
+            />
+          )}
         </div>
       )}
     </div>

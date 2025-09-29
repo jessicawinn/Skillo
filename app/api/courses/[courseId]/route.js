@@ -2,8 +2,8 @@
 import clientPromise from "@/lib/mongodb";
 import { ObjectId } from "mongodb";
 
-export async function PUT(req, { params }) {
-  const { courseId } = params;
+export async function PUT(req, context) {
+  const { courseId } = context.params;
   const body = await req.json();
 
   // List all fields you want to allow updating (except enrolledStudents)
@@ -69,8 +69,9 @@ export async function PUT(req, { params }) {
 }
 
 
-export async function GET(req, { params }) {
+export async function GET(req, context) {
   try {
+    const params = await context.params;
     const { courseId } = params;
     const client = await clientPromise;
     const db = client.db("Skillo");
@@ -90,7 +91,8 @@ export async function GET(req, { params }) {
 }
 
 
-export async function DELETE(req, { params }) {
+export async function DELETE(req, context) {
+  const params = await context.params;
   const { courseId } = params;
   const client = await clientPromise;
   const db = client.db("Skillo");

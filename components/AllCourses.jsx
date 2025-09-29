@@ -100,18 +100,18 @@ const AllCourses = ({ basePath = "", fetchEnrollments = true }) => {
 
       {/* Search bar */}
       <div className="flex justify-center">
-        <div className="flex w-full max-w-2xl mb-6">
-          <input
-            type="text"
-            value={searchQuery}
-            onChange={handleSearch}
-            placeholder="What would you like to learn today"
-            className="flex-1 border border-gray-300 rounded-l-lg px-4 py-2 focus:outline-none"
-          />
-          <button className="bg-purple-400 text-white px-4 py-2 rounded-r-lg hover:bg-purple-500 transition">
-            Search Courses
-          </button>
-        </div>
+          <div className="flex w-full max-w-2xl mb-6">
+            <input
+              type="text"
+              value={searchQuery}
+              onChange={handleSearch}
+              placeholder="What would you like to learn today"
+              className="flex-1 border-2 border-gray-400 bg-white rounded-lg px-4 py-3 focus:outline-none"
+            />
+            {/* <button className="bg-purple-400 text-white px-4 py-2 rounded-r-lg hover:bg-purple-500 transition">
+              Search Courses
+            </button> */}
+          </div>
       </div>
 
       {/* Dynamic Category filters */}

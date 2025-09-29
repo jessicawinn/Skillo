@@ -52,9 +52,11 @@ const Signup = ({ isOpen, onClose, onSwitchToLogin }) => {
             if (!res.ok) {
                 setMessage(data.message || "Signup failed");
             } else {
-                setMessage("Signup successful! You can now log in.");
-                // Optionally, close modal after a short delay
+                setMessage("Signup successful! Verification email sent. Please check your inbox.");
+                // Show toast for email sent
+                setShowToast(true);
                 setTimeout(() => {
+                    setShowToast(false);
                     onClose();
                     setFullName("");
                     setEmail("");
@@ -62,7 +64,7 @@ const Signup = ({ isOpen, onClose, onSwitchToLogin }) => {
                     setConfirmPassword("");
                     setRole("student");
                     setMessage("");
-                }, 1500);
+                }, 2000);
             }
         } catch (error) {
 
@@ -73,6 +75,9 @@ const Signup = ({ isOpen, onClose, onSwitchToLogin }) => {
         console.log("Google signup clicked", role);
     };
 
+
+    // Toast state
+    const [showToast, setShowToast] = useState(false);
     if (!isVisible) return null;
 
     return (
@@ -82,6 +87,13 @@ const Signup = ({ isOpen, onClose, onSwitchToLogin }) => {
         >
             <div className="fixed inset-0 bg-black/30"></div>
             <div className="fixed inset-0 backdrop-blur-sm"></div>
+
+            {/* Toast notification */}
+            {showToast && (
+                <div className="fixed top-8 left-1/2 transform -translate-x-1/2 bg-green-600 text-white px-6 py-3 rounded shadow-lg z-[100] animate-fade-in">
+                    Verification email sent! Please check your inbox.
+                </div>
+            )}
 
             <div
                 className={`relative bg-white p-6 rounded-lg shadow-2xl w-96 max-w-full mx-4 z-50 transform transition-all duration-300 ${isOpen ? "scale-100 translate-y-0" : "scale-95 translate-y-4"}`}
@@ -191,14 +203,14 @@ const Signup = ({ isOpen, onClose, onSwitchToLogin }) => {
                     <div className="flex-grow border-t border-gray-300"></div>
                 </div>
 
-                <button
+                {/* <button
                     type="button"
                     onClick={handleGoogleSignup}
                     className="w-full flex items-center justify-center border border-gray-300 py-2 rounded-md hover:bg-gray-50 transition-colors font-medium"
                 >
                     <FcGoogle className="w-5 h-5 mr-2" />
                     Continue with Google
-                </button>
+                </button> */}
 
                 <p className="text-center text-sm text-gray-600 mt-4">
                     Already have an account?{" "}

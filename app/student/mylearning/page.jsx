@@ -5,11 +5,13 @@ import NavBar from "@/components/NavBar";
 import Footer from "@/components/Footer";
 
 export default function MyLearningPage() {
-  return (
-        <>
+    return (
+        <div className="flex flex-col min-h-screen">
             <NavBar />
-            <MyLearning/>
+            <div className="flex-grow">
+                <MyLearning />
+            </div>
             <Footer />
-        </>
+        </div>
     );
 }

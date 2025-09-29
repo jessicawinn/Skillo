@@ -6,7 +6,6 @@ import { useEffect, useState } from "react"
 import { InstructorStats } from "@/components/dashboard/instructor-stats"
 import { InstructorCourses } from "@/components/dashboard/instructor-courses"
 import { CourseForm } from "@/components/courses/course-form"
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog"
 
 export default function InstructorDashboard() {
   const { courses, createCourse, updateCourse, deleteCourse } = useCourses()
@@ -77,7 +76,7 @@ export default function InstructorDashboard() {
   const handleDeleteCourse = (courseId) => {
     if (confirm("Are you sure you want to delete this course? This action cannot be undone.")) {
       deleteCourse(courseId)
-      setInstructorCourses(prev => prev.filter(c => c.id !== courseId))
+      setInstructorCourses(prev => prev.filter(c => (c._id || c.id) !== courseId))
     }
   }
 
@@ -134,20 +133,22 @@ export default function InstructorDashboard() {
         </div>
       </div>
 
-      {/* Course Form Dialog */}
+      {/* Course Form Modal (no components/ui) */}
       {showCourseForm && (
-        <Dialog open={showCourseForm} onOpenChange={setShowCourseForm}>
-          <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto shadow-2xl rounded-xl bg-white">
-            <DialogHeader>
-              <DialogTitle>{editingCourse ? "Edit Course" : "Create Course"}</DialogTitle>
-            </DialogHeader>
-            <CourseForm
-              course={editingCourse || null}
-              onSubmit={handleSubmitCourse}
-              onCancel={handleCancelCourse}
-            />
-          </DialogContent>
-        </Dialog>
+        <div 
+          className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-start justify-center p-4 z-50 overflow-y-auto"
+          onClick={e => {
+            if (e.target === e.currentTarget) {
+              handleCancelCourse();
+            }
+          }}
+        >
+          <CourseForm
+            course={editingCourse || null}
+            onSubmit={handleSubmitCourse}
+            onCancel={handleCancelCourse}
+          />
+        </div>
       )}
     </>
   )

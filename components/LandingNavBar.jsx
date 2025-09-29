@@ -17,12 +17,12 @@ const LandingNavBar = ({ onLoginClick, onSignupClick }) => {
         <Link href="/courses" className="hover:text-purple-500 transition-colors">
           Courses
         </Link>
-        <Link href="/about" className="hover:text-purple-500 transition-colors">
+        {/* <Link href="/about" className="hover:text-purple-500 transition-colors">
           About
         </Link>
         <Link href="/contactus" className="hover:text-purple-500 transition-colors">
           Contact Us
-        </Link>
+        </Link> */}
 
         <button
           onClick={onLoginClick}

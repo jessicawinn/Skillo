@@ -52,7 +52,7 @@ export function InstructorCourses({ courses, onEdit, onDelete, onView, onCreate 
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {courses.map((course) => (
-            <div key={course.id} className="relative bg-white rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 overflow-hidden">
+            <div key={course._id || course.id} className="relative bg-white rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 overflow-hidden">
               <div className="p-6">
                 <div className="flex items-center justify-between mb-2">
                   <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${getLevelColor(course.level)}`}>
@@ -81,7 +81,7 @@ export function InstructorCourses({ courses, onEdit, onDelete, onView, onCreate 
                 </div>
                 <div className="flex gap-2 mt-4">
                   <button 
-                    onClick={() => onView(course.id)}
+                    onClick={() => onView(course._id || course.id)}
                     className="inline-flex items-center px-3 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 transition-colors duration-200"
                   >
                     <Eye className="h-4 w-4 mr-1" /> View
@@ -93,7 +93,7 @@ export function InstructorCourses({ courses, onEdit, onDelete, onView, onCreate 
                     <Edit className="h-4 w-4 mr-1" /> Edit
                   </button>
                   <button 
-                    onClick={() => onDelete(course.id)}
+                    onClick={() => onDelete(course._id || course.id)}
                     className="inline-flex items-center px-3 py-2 border border-red-300 text-sm font-medium rounded-md text-red-700 bg-white hover:bg-red-50 transition-colors duration-200"
                   >
                     <Trash2 className="h-4 w-4 mr-1" /> Delete

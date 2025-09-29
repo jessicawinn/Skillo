@@ -23,6 +23,14 @@ export async function POST(req) {
             );
         }
 
+        // Check if email is verified
+        if (!user.isVerified) {
+            return new Response(
+                JSON.stringify({ message: "Please verify your email before logging in." }),
+                { status: 403 }
+            );
+        }
+
         const isMatch = await bcrypt.compare(password, user.password);
         if (!isMatch) {
             return new Response(
@@ -31,18 +39,17 @@ export async function POST(req) {
             );
         }
 
-
         const token = jwt.sign(
             { userId: user._id, role: user.role },
             process.env.JWT_SECRET,
-            { expiresIn: "8h" }  // token expires in 8 hours
+            { expiresIn: "8h" }
         );
 
         // Set JWT as HTTP-only cookie
         const cookie = serialize("token", token, {
             httpOnly: true,
             path: "/",
-            maxAge: 8 * 60 * 60, // 8 hours in seconds
+            maxAge: 8 * 60 * 60,
             sameSite: "lax",
             secure: false,
         });

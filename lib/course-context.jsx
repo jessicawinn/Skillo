@@ -161,16 +161,39 @@ export function CourseProvider({ children }) {
     setEnrollments(mockEnrollments)
   }, [])
 
-  const createCourse = (courseData) => {
-    const newCourse = {
-      ...courseData,
-      id: Date.now().toString(),
-      createdAt: new Date().toISOString().split("T")[0],
-      updatedAt: new Date().toISOString().split("T")[0],
-      enrolledStudents: 0,
-      rating: 0,
+  const createCourse = async (courseData) => {
+    try {
+      // Map frontend field names to backend expected names
+      const payload = {
+        ...courseData,
+        instructor_id: courseData.instructorId,
+        instructor_name: courseData.instructorName,
+      };
+      const res = await fetch("/api/courses", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload),
+      });
+      const data = await res.json();
+      if (res.ok && data.courseId) {
+        // Add new course to state
+        setCourses((prev) => [
+          ...prev,
+          {
+            ...courseData,
+            _id: data.courseId,
+            enrolledStudents: 0,
+            rating: 0,
+            createdAt: new Date().toISOString().split("T")[0],
+            updatedAt: new Date().toISOString().split("T")[0],
+          },
+        ]);
+      } else {
+        alert(data.message || "Failed to create course.");
+      }
+    } catch (error) {
+      alert("Failed to create course.");
     }
-    setCourses((prev) => [...prev, newCourse])
   }
 
   const updateCourse = (id, updates) => {
@@ -182,8 +205,21 @@ export function CourseProvider({ children }) {
   }
 
   const deleteCourse = (id) => {
-    setCourses((prev) => prev.filter((course) => course.id !== id))
-    setLessons((prev) => prev.filter((lesson) => lesson.courseId !== id))
+    // Try to delete from backend first
+    fetch(`/api/courses/${id}`, {
+      method: "DELETE"
+    })
+      .then(res => {
+        if (res.ok) {
+          setCourses((prev) => prev.filter((course) => (course._id || course.id) !== id))
+          setLessons((prev) => prev.filter((lesson) => lesson.courseId !== id))
+        } else {
+          alert("Failed to delete course from server.");
+        }
+      })
+      .catch(() => {
+        alert("Failed to delete course from server.");
+      });
   }
 
   const createLesson = (lessonData) => {
