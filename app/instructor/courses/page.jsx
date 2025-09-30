@@ -306,10 +306,7 @@ export default function InstructorCoursesPage() {
                   <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
                     Course
                   </span>
-                  <div className="flex items-center gap-1 text-sm text-gray-500">
-                    <Star className="h-4 w-4 fill-yellow-400 text-yellow-400" />
-                    <span>{course.rating || 0}</span>
-                  </div>
+              
                 </div>
                 
                 <h3 className="font-semibold text-lg mb-2 text-gray-900 line-clamp-2">{course.title}</h3>

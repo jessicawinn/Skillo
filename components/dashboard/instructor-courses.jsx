@@ -58,10 +58,10 @@ export function InstructorCourses({ courses, onEdit, onDelete, onView, onCreate 
                   <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${getLevelColor(course.level)}`}>
                     {course.level}
                   </span>
-                  <div className="flex items-center gap-1 text-sm text-gray-500">
+                  {/* <div className="flex items-center gap-1 text-sm text-gray-500">
                     <Star className="h-4 w-4 fill-yellow-400 text-yellow-400" />
                     <span>{course.rating}</span>
-                  </div>
+                  </div> */}
                 </div>
                 <h3 className="font-semibold text-lg mb-1 text-gray-900">{course.title}</h3>
                 <p className="text-sm text-gray-500 mb-2">{course.description}</p>
