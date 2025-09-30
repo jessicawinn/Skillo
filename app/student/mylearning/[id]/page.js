@@ -19,17 +19,23 @@ const StudyPage = () => {
   const courseId = params.id;
 
   useEffect(() => {
-    // Get userId from sessionStorage
-    const storedUserId = sessionStorage.getItem("userId");
-    if (!storedUserId) {
-      setError("Please log in to access this course");
-      setLoading(false);
-      return;
-    }
-    setUserId(storedUserId);
-
-    const fetchCourseAndLessons = async () => {
+    const fetchUserIdAndCourse = async () => {
       try {
+        const userRes = await fetch("/api/auth/me", { credentials: "include" });
+        if (!userRes.ok) {
+          setError("Please log in to access this course");
+          setLoading(false);
+          return;
+        }
+        const userData = await userRes.json();
+        const userId = userData.user?.id;
+        if (!userId) {
+          setError("Please log in to access this course");
+          setLoading(false);
+          return;
+        }
+        setUserId(userId);
+
         // Fetch course details
         const courseRes = await fetch(`/api/courses/${courseId}`);
         if (!courseRes.ok) throw new Error("Failed to fetch course");
@@ -40,30 +46,26 @@ const StudyPage = () => {
         const lessonsRes = await fetch(`/api/courses/${courseId}/lessons`);
         if (!lessonsRes.ok) throw new Error("Failed to fetch lessons");
         const lessonsData = await lessonsRes.json();
-        
         // Sort lessons by order
         const sortedLessons = (lessonsData.lessons || []).sort((a, b) => (a.order || 0) - (b.order || 0));
         setLessons(sortedLessons);
 
         // Fetch user progress for this course
-        const progressRes = await fetch(`/api/progress?userId=${storedUserId}&courseId=${courseId}`);
+        const progressRes = await fetch(`/api/progress?userId=${userId}&courseId=${courseId}`);
         if (progressRes.ok) {
           const progressData = await progressRes.json();
           const completedSet = new Set();
-          
           // Create a map of lessonId -> lesson index for faster lookup
           const lessonIdToIndex = {};
           sortedLessons.forEach((lesson, index) => {
             lessonIdToIndex[lesson._id] = index;
           });
-
           progressData.progress.forEach(p => {
             const lessonIndex = lessonIdToIndex[p.lessonId];
             if (lessonIndex !== undefined) {
               completedSet.add(`${lessonIndex}-${p.contentIndex}`);
             }
           });
-          
           setCompletedContents(completedSet);
         }
       } catch (err) {
@@ -73,8 +75,7 @@ const StudyPage = () => {
         setLoading(false);
       }
     };
-
-    fetchCourseAndLessons();
+    fetchUserIdAndCourse();
   }, [courseId]);
 
   const currentLesson = lessons[currentLessonIndex];

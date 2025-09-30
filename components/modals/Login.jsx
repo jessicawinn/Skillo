@@ -46,21 +46,16 @@ const Login = ({ isOpen, onClose, onSwitchToSignup }) => {
       }
 
       if (res.ok) {
-        sessionStorage.setItem('userId', data.userId);
-        sessionStorage.setItem('role', data.role);
-        sessionStorage.setItem("userName", data.name);
         alert('Signin successful!');
-        console.log("Redirecting to /student");
-        console.log(data.role)
+        console.log(data.user?.role);
 
-        if (data.role === "student") {
+        if (data.user?.role === "student") {
           router.push("/student");
-        } else if (data.role === "instructor") {
+        } else if (data.user?.role === "instructor") {
           router.push("/instructor/dashboard");
         } else {
           router.push("/");
         }
-
         // Close modal after redirect
         // onClose(); // Try commenting this out for testing
       }
@@ -149,6 +144,7 @@ const Login = ({ isOpen, onClose, onSwitchToSignup }) => {
               placeholder="Enter your password"
               className="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-purple-500 transition-colors"
               required
+              autoComplete="current-password"
             />
             <a
               href="/forgot-password"

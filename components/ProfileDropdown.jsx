@@ -9,12 +9,6 @@ const ProfileDropdown = () => {
       // Optional: call logout API
       await fetch('/api/auth/logout', { method: 'POST' });
 
-      // Clear sessionStorage
-      sessionStorage.removeItem('token');
-      sessionStorage.removeItem('userId');
-      sessionStorage.removeItem('role');
-      sessionStorage.removeItem('name');
-
       // Redirect to login or landing page
       router.push('/');
     } catch (error) {

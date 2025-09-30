@@ -18,14 +18,17 @@ export default function InstructorCoursesPage() {
   const [sortBy, setSortBy] = useState("newest")
 
   useEffect(() => {
-    if (typeof window !== "undefined") {
-      const userId = sessionStorage.getItem("userId")
-      const name = sessionStorage.getItem("name")
-      const role = sessionStorage.getItem("role")
-      if (userId && role === "instructor") {
-        setUser({ id: userId, name, role })
-      }
+    const fetchUser = async () => {
+      try {
+        const res = await fetch("/api/auth/me", { credentials: "include" })
+        if (!res.ok) return
+        const data = await res.json()
+        if (data.user && data.user.role === "instructor") {
+          setUser({ id: data.user._id || data.user.id, name: data.user.name, role: data.user.role })
+        }
+      } catch (err) {}
     }
+    fetchUser()
   }, [])
 
   useEffect(() => {

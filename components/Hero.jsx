@@ -7,11 +7,18 @@ const Hero = () => {
   const [userName, setUserName] = useState("Yoonie");
 
   useEffect(() => {
-    const name = sessionStorage.getItem("userName");
-    if (name) {
-      setUserName(name);
-    }
-  })
+    const fetchUser = async () => {
+      try {
+        const res = await fetch("/api/auth/me", { credentials: "include" });
+        if (!res.ok) return;
+        const data = await res.json();
+        if (data.user?.name) {
+          setUserName(data.user.name);
+        }
+      } catch {}
+    };
+    fetchUser();
+  }, []);
   return (
     <div className="flex text-left p-8 bg-gray-100">
       <div className="w-2/3 m-10 flex flex-col gap-10">

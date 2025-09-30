@@ -57,14 +57,14 @@ export async function POST(req) {
         return new Response(
             JSON.stringify({
                 message: "Signin successful",
-                userId: user._id,
-                role: user.role,
-                name: user.name
+                user: {
+                    id: user._id,
+                    role: user.role,
+                    name: user.name,
+                    email: user.email
+                }
             }),
-            {
-                status: 200,
-                headers: { "Set-Cookie": cookie },
-            }
+            { status: 200, headers: { "Set-Cookie": cookie } }
         );
 
     } catch (error) {

@@ -31,9 +31,11 @@ const CourseDetails = ({ course }) => {
   // Check if user already enrolled
   useEffect(() => {
     const checkEnrollment = async () => {
-      const userId = sessionStorage.getItem("userId");
+      const userRes = await fetch("/api/auth/me", { credentials: "include" });
+      if (!userRes.ok) return;
+      const userData = await userRes.json();
+      const userId = userData.user?.id;
       if (!userId) return;
-
       try {
         const res = await fetch(`/api/enrollments?userId=${userId}&courseId=${course._id}`);
         if (!res.ok) return;
@@ -43,24 +45,27 @@ const CourseDetails = ({ course }) => {
         console.error(err);
       }
     };
-
     checkEnrollment();
   }, [course._id]);
 
   // Handle enrollment
   const handleEnroll = async () => {
     setEnrolling(true);
-
     try {
-      const userId = sessionStorage.getItem("userId");
+      const userRes = await fetch("/api/auth/me", { credentials: "include" });
+      if (!userRes.ok) {
+        alert("You must be logged in to enroll");
+        setEnrolling(false);
+        return;
+      }
+      const userData = await userRes.json();
+      const userId = userData.user?.id;
       if (!userId) {
         alert("You must be logged in to enroll");
         setEnrolling(false);
         return;
       }
-
       const instructor_id = course.instructor_id;
-
       const res = await fetch("/api/enrollments", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -70,9 +75,7 @@ const CourseDetails = ({ course }) => {
           instructor_id,
         }),
       });
-
       const data = await res.json();
-
       if (res.ok) {
         setEnrolled(true);
         alert("Enrollment successful!");

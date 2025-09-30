@@ -30,10 +30,11 @@ const AllCourses = ({ basePath = "", fetchEnrollments = true }) => {
         setFilteredCourses(normalizedCourses);
 
         if (fetchEnrollments) {
-          const userId = sessionStorage.getItem("userId");
-          const userName = sessionStorage.getItem("userName");
-          const role = sessionStorage.getItem("role");
-
+          const userRes = await fetch("/api/auth/me", { credentials: "include" });
+          if (!userRes.ok) return;
+          const userData = await userRes.json();
+          const userId = userData.user?.id;
+          if (!userId) return;
           const enrollmentsRes = await fetch(`/api/enrollments?userId=${userId}`);
           if (!enrollmentsRes.ok) throw new Error("Failed to fetch enrollments");
           const enrollmentsData = await enrollmentsRes.json();

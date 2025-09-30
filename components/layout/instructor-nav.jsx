@@ -9,24 +9,28 @@ export function InstructorNav() {
   const router = useRouter();
 
   useEffect(() => {
-    // Get user info from sessionStorage
-    if (typeof window !== "undefined") {
-      const name = sessionStorage.getItem("userName") || "Instructor";
-      const email = sessionStorage.getItem("userEmail") || "";
-      const avatar = sessionStorage.getItem("userAvatar") || "/placeholder.svg";
-      const role = sessionStorage.getItem("role");
-      if (role === "instructor") {
-        setUser({ name, email, avatar });
+    const fetchUser = async () => {
+      const res = await fetch("/api/auth/me", { credentials: "include" });
+      if (!res.ok) {
+        setUser(null);
+        return;
+      }
+      const data = await res.json();
+      if (data.user?.role === "instructor") {
+        setUser({
+          name: data.user.name || "Instructor",
+          email: data.user.email || "",
+          avatar: data.user.avatar || "/placeholder.svg"
+        });
       } else {
         setUser(null);
       }
-    }
+    };
+    fetchUser();
   }, []);
 
-  const handleLogout = () => {
-    if (typeof window !== "undefined") {
-      sessionStorage.clear();
-    }
+  const handleLogout = async () => {
+    await fetch("/api/auth/logout", { method: "POST" });
     router.push("/");
   };
 

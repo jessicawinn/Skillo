@@ -10,7 +10,7 @@ import { Badge } from "@/components/ui/badge";
 import { X, Plus } from "lucide-react";
 
 
-  // Get user from sessionStorage
+
   const [user, setUser] = useState({
     name: "",
     email: "",
@@ -36,34 +36,38 @@ import { X, Plus } from "lucide-react";
     avatar: ""
   });
 
-  // Load user from sessionStorage on mount
+  // Load user from /api/auth/me on mount
   useEffect(() => {
-    if (typeof window !== "undefined") {
-      const name = sessionStorage.getItem("name") || ""
-      const email = sessionStorage.getItem("email") || ""
-      const bio = sessionStorage.getItem("bio") || ""
-      const expertise = sessionStorage.getItem("expertise") ? JSON.parse(sessionStorage.getItem("expertise")) : []
-      const website = sessionStorage.getItem("website") || ""
-      const linkedin = sessionStorage.getItem("linkedin") || ""
-      const twitter = sessionStorage.getItem("twitter") || ""
-      const credentials = sessionStorage.getItem("credentials") || ""
-      const avatar = sessionStorage.getItem("avatar") || ""
-      const userObj = { name, email, bio, expertise, website, linkedin, twitter, credentials, avatar }
-      setUser(userObj)
-      setFormData(userObj)
+    const fetchUser = async () => {
+      try {
+        const res = await fetch("/api/auth/me", { credentials: "include" })
+        if (!res.ok) return
+        const data = await res.json()
+        if (data.user) {
+          const userObj = {
+            name: data.user.name || "",
+            email: data.user.email || "",
+            bio: data.user.bio || "",
+            expertise: data.user.expertise || [],
+            website: data.user.website || "",
+            linkedin: data.user.linkedin || "",
+            twitter: data.user.twitter || "",
+            credentials: data.user.credentials || "",
+            avatar: data.user.avatar || ""
+          }
+          setUser(userObj)
+          setFormData(userObj)
+        }
+      } catch (err) {}
     }
+    fetchUser()
   }, [])
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    // Save to sessionStorage
-    if (typeof window !== "undefined") {
-      Object.entries(formData).forEach(([key, value]) => {
-        sessionStorage.setItem(key, typeof value === "object" ? JSON.stringify(value) : value)
-      })
-    }
+    // TODO: Save to backend via API (not sessionStorage)
     setIsEditing(false);
-    console.log("[v0] Profile updated in sessionStorage:", formData);
+    console.log("[v0] Profile updated:", formData);
   };
 
   const addExpertise = () => {

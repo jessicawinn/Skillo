@@ -14,15 +14,19 @@ const Stats = () => {
     useEffect(() => {
         const fetchStats = async () => {
             try {
-                const userId = sessionStorage.getItem("userId");
+                const userRes = await fetch("/api/auth/me", { credentials: "include" });
+                if (!userRes.ok) {
+                    setLoading(false);
+                    return;
+                }
+                const userData = await userRes.json();
+                const userId = userData.user?.id;
                 if (!userId) {
                     setLoading(false);
                     return;
                 }
-
                 const res = await fetch(`/api/enrollments?userId=${userId}`);
                 const data = await res.json();
-
                 if (res.ok && data.enrollments) {
                     // Process courses with progress and categorize
                     const coursesWithProgress = await Promise.all(
@@ -33,15 +37,12 @@ const Stats = () => {
                                 try {
                                     const progressRes = await fetch(`/api/progress?userId=${userId}&courseId=${enrollment.course._id}`);
                                     const lessonsRes = await fetch(`/api/courses/${enrollment.course._id}/lessons`);
-                                    
                                     if (progressRes.ok && lessonsRes.ok) {
                                         const progressData = await progressRes.json();
                                         const lessonsData = await lessonsRes.json();
-                                        
                                         // Get valid lesson IDs and filter progress
                                         const validLessonIds = new Set(lessonsData.lessons.map(lesson => lesson._id));
                                         const validProgress = progressData.progress.filter(p => validLessonIds.has(p.lessonId));
-                                        
                                         // Calculate percentage
                                         const totalContents = lessonsData.lessons.reduce((total, lesson) => total + (lesson.contents?.length || 0), 0);
                                         progress = totalContents > 0 ? Math.round((validProgress.length / totalContents) * 100) : 0;
@@ -49,7 +50,6 @@ const Stats = () => {
                                 } catch (error) {
                                     console.error('Error calculating progress:', error);
                                 }
-                                
                                 return { 
                                     ...enrollment.course, 
                                     progress,
@@ -57,11 +57,9 @@ const Stats = () => {
                                 };
                             })
                     );
-
                     // Calculate stats
                     const completedCount = coursesWithProgress.filter(course => course.isCompleted).length;
                     const totalCount = coursesWithProgress.length;
-
                     // Group by category and calculate average progress
                     const categoryMap = {};
                     coursesWithProgress.forEach(course => {
@@ -73,14 +71,12 @@ const Stats = () => {
                         categoryMap[category].count += 1;
                         categoryMap[category].courses.push(course);
                     });
-
                     const categoryProgress = Object.entries(categoryMap).map(([category, data]) => ({
                         category,
                         averageProgress: Math.round(data.totalProgress / data.count),
                         courseCount: data.count,
                         courses: data.courses
                     }));
-
                     setStats({
                         completedCourses: completedCount,
                         totalEnrolledCourses: totalCount,
@@ -93,7 +89,6 @@ const Stats = () => {
                 setLoading(false);
             }
         };
-
         fetchStats();
     }, []);
 

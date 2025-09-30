@@ -11,23 +11,26 @@ export default function InstructorLayout({ children }) {
   const router = useRouter()
 
   useEffect(() => {
-    // Delay to ensure sessionStorage is available
-    const checkAuth = () => {
-      const userId = typeof window !== "undefined" ? sessionStorage.getItem("userId") : null
-      const role = typeof window !== "undefined" ? sessionStorage.getItem("role") : null
-
-      if (!userId) {
-        router.replace("/auth")
-        return
+    const checkAuth = async () => {
+      try {
+        const res = await fetch("/api/auth/me", { credentials: "include" })
+        if (!res.ok) {
+          router.replace("/?login=true")
+          return
+        }
+        const data = await res.json()
+        if (data.user?.role !== "instructor") {
+          router.replace("/student/dashboard")
+          return
+        }
+        setIsInstructor(true)
+      } catch (err) {
+        router.replace("/?login=true")
+      } finally {
+        setLoading(false)
       }
-      if (role !== "instructor") {
-        router.replace("/student/dashboard")
-        return
-      }
-      setIsInstructor(true)
     }
     checkAuth()
-    setLoading(false)
   }, [router])
 
   if (loading) {

@@ -11,16 +11,21 @@ const MyCourses = () => {
   useEffect(() => {
     const fetchCourses = async () => {
       try {
-        const userId = sessionStorage.getItem("userId");
+        const userRes = await fetch("/api/auth/me", { credentials: "include" });
+        if (!userRes.ok) {
+          setError("Please log in to view your courses");
+          setLoading(false);
+          return;
+        }
+        const userData = await userRes.json();
+        const userId = userData.user?.id;
         if (!userId) {
           setError("Please log in to view your courses");
           setLoading(false);
           return;
         }
-
         const res = await fetch(`/api/enrollments?userId=${userId}`);
         const data = await res.json();
-
         if (res.ok && data.enrollments) {
           // Process courses with progress
           const coursesWithProgress = await Promise.all(
@@ -32,23 +37,18 @@ const MyCourses = () => {
                 try {
                   const progressRes = await fetch(`/api/progress?userId=${userId}&courseId=${enrollment.course._id}`);
                   const lessonsRes = await fetch(`/api/courses/${enrollment.course._id}/lessons`);
-                  
                   if (progressRes.ok && lessonsRes.ok) {
                     const progressData = await progressRes.json();
                     const lessonsData = await lessonsRes.json();
-                    
                     // Get valid lesson IDs
                     const validLessonIds = new Set(lessonsData.lessons.map(lesson => lesson._id));
-                    
                     // Filter progress to only include entries for lessons that exist
                     const validProgress = progressData.progress.filter(p => validLessonIds.has(p.lessonId));
-                    
                     // Count total content items
                     const totalContents = (lessonsData.lessons || []).reduce(
                       (total, lesson) => total + (lesson.contents?.length || 0), 
                       0
                     );
-                    
                     // Calculate percentage
                     progress = totalContents > 0 ? Math.round((validProgress.length / totalContents) * 100) : 0;
                   }
@@ -56,7 +56,6 @@ const MyCourses = () => {
                   console.error('Error calculating progress:', error);
                   progress = 0;
                 }
-                
                 return { 
                   ...enrollment.course, 
                   progress,
@@ -66,7 +65,6 @@ const MyCourses = () => {
                 };
               })
           );
-          
           setCourses(coursesWithProgress);
         } else {
           setError("Failed to fetch courses");
@@ -78,7 +76,6 @@ const MyCourses = () => {
         setLoading(false);
       }
     };
-
     fetchCourses();
   }, []);
 

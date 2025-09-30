@@ -21,16 +21,23 @@ export default function InstructorDashboard() {
   const [showCourseForm, setShowCourseForm] = useState(false)
   const [editingCourse, setEditingCourse] = useState(null)
 
-  // Get user from sessionStorage
+  // Get user from secure API
   useEffect(() => {
-    if (typeof window !== "undefined") {
-      const userId = sessionStorage.getItem("userId")
-      const name = sessionStorage.getItem("name")
-      const role = sessionStorage.getItem("role")
-      if (userId && role === "instructor") {
-        setUser({ id: userId, name, role })
+    const fetchUser = async () => {
+      try {
+        const res = await fetch("/api/auth/me", { credentials: "include" })
+        if (!res.ok) throw new Error("Failed to fetch user info")
+        const data = await res.json()
+        if (data && data.user && data.user.role === "instructor") {
+          setUser({ id: data.user._id || data.user.id, name: data.user.name, role: data.user.role })
+        } else {
+          setUser(null)
+        }
+      } catch (err) {
+        setUser(null)
       }
     }
+    fetchUser()
   }, [])
 
   // Fetch instructor courses and stats
