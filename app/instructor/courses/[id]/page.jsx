@@ -53,6 +53,8 @@ export default function CoursePage() {
   const [lessons, setLessons] = useState([])
   const [showLessonForm, setShowLessonForm] = useState(false)
   const [editingLesson, setEditingLesson] = useState(null)
+    const [images, setImages] = useState([])
+    const [imageLoading, setImageLoading] = useState(false)
 
   const params = useParams()
   const router = useRouter()
@@ -85,6 +87,26 @@ export default function CoursePage() {
     };
     fetchCourse();
   }, [courseId]);
+
+    // Fetch images from Azure Blob Storage using your API
+    useEffect(() => {
+      const fetchImages = async () => {
+        setImageLoading(true);
+        try {
+          // Fetch image URLs from your API (no instructorId needed)
+          const imagesRes = await fetch(`/api/get-images?courseId=${courseId}`);
+          const imagesData = await imagesRes.json();
+          console.log("Fetched image URLs:", imagesData.urls);
+          setImages(imagesData.urls || []);
+        } catch (err) {
+          console.error("Error fetching images:", err);
+          setImages([]);
+        } finally {
+          setImageLoading(false);
+        }
+      };
+      fetchImages();
+    }, [courseId]);
 
   const handleEditCourse = () => setShowEditCourseForm(true)
   const handleCancelEditCourse = () => setShowEditCourseForm(false)
@@ -251,7 +273,7 @@ export default function CoursePage() {
         <div className="bg-white rounded-2xl shadow-xl overflow-hidden mt-6">
           <div className="relative">
             <img
-              src={course.thumbnail || "/placeholder.svg"}
+              src={images[0] || course.thumbnail || "/placeholder.svg"}
               alt={course.title}
               className="w-full h-80 object-cover"
             />

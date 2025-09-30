@@ -91,6 +91,8 @@ export async function GET(req, context) {
 }
 
 
+import { BlobServiceClient } from "@azure/storage-blob";
+
 export async function DELETE(req, context) {
   const params = await context.params;
   const { courseId } = params;
@@ -98,6 +100,7 @@ export async function DELETE(req, context) {
   const db = client.db("Skillo");
   const courses = db.collection("courses");
 
+  // Delete course from DB
   const result = await courses.deleteOne({ _id: new ObjectId(courseId) });
 
   if (result.deletedCount === 0) {
@@ -105,6 +108,23 @@ export async function DELETE(req, context) {
       JSON.stringify({ message: "Course not found" }),
       { status: 404 }
     );
+  }
+
+  // Delete all blobs for this course from Azure Blob Storage
+  try {
+    const blobServiceClient = BlobServiceClient.fromConnectionString(process.env.AZURE_STORAGE_CONNECTION_STRING);
+    const containerClient = blobServiceClient.getContainerClient("skillo-images");
+    const prefix = `${courseId}/`;
+    const deletePromises = [];
+    for await (const blob of containerClient.listBlobsFlat({ prefix })) {
+      const blockBlobClient = containerClient.getBlockBlobClient(blob.name);
+      deletePromises.push(blockBlobClient.deleteIfExists());
+    }
+    await Promise.all(deletePromises);
+  } catch (err) {
+    console.error("Error deleting course images from Azure Blob Storage:", err);
+    // Optionally, you can return a warning in the response
+    return new Response(JSON.stringify({ message: "Course deleted, but failed to delete images from storage." }), { status: 200 });
   }
 
   return new Response(JSON.stringify({ message: "Course deleted" }), { status: 200 });

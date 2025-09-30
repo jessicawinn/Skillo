@@ -10,17 +10,39 @@ const RecommendedCourses = ({ basePath = "" }) => {
     useEffect(() => {
       const fetchCourses = async () => {
         try {
-          const res = await fetch("/api/courses", { method: 'GET' }); // your GET API
+          const res = await fetch("/api/courses", { method: 'GET' });
           if (!res.ok) throw new Error("Failed to fetch courses");
           const data = await res.json();
-          setCourses(data.courses || []);
+          const normalizedCourses = (data.courses || []).map(c => ({
+            ...c,
+            _id: c._id.toString()
+          }));
+          // Fetch thumbnail from Azure for each course
+          const coursesWithThumbnails = await Promise.all(
+            normalizedCourses.map(async (course) => {
+              try {
+                const imagesRes = await fetch(`/api/get-images?courseId=${course._id}`);
+                const imagesData = await imagesRes.json();
+                return {
+                  ...course,
+                  thumbnail: imagesData.urls && imagesData.urls.length > 0 ? imagesData.urls[0] : course.thumbnail || ""
+                };
+              } catch {
+                return {
+                  ...course,
+                  thumbnail: course.thumbnail || ""
+                };
+              }
+            })
+          );
+          setCourses(coursesWithThumbnails);
         } catch (err) {
           console.error(err);
         } finally {
           setLoading(false);
         }
       };
-  
+
       fetchCourses();
     }, []);
   

@@ -32,21 +32,41 @@ export default function InstructorCoursesPage() {
   }, [])
 
   useEffect(() => {
-    if (!user) return
+    if (!user) return;
     const fetchCourses = async () => {
-      setLoading(true)
+      setLoading(true);
       try {
-        const res = await fetch(`/api/courses?instructorId=${user.id}`)
-        const data = await res.json()
-        setInstructorCourses(data.courses || [])
+        const res = await fetch(`/api/courses?instructorId=${user.id}`);
+        const data = await res.json();
+        const courses = data.courses || [];
+        // For each course, fetch its thumbnail from storage
+        const coursesWithThumbnails = await Promise.all(
+          courses.map(async (course) => {
+            try {
+              const courseId = course._id || course.id;
+              const imagesRes = await fetch(`/api/get-images?courseId=${courseId}`);
+              const imagesData = await imagesRes.json();
+              return {
+                ...course,
+                thumbnail: imagesData.urls && imagesData.urls.length > 0 ? imagesData.urls[0] : course.thumbnail || ""
+              };
+            } catch {
+              return {
+                ...course,
+                thumbnail: course.thumbnail || ""
+              };
+            }
+          })
+        );
+        setInstructorCourses(coursesWithThumbnails);
       } catch {
-        setInstructorCourses([])
+        setInstructorCourses([]);
       } finally {
-        setLoading(false)
+        setLoading(false);
       }
-    }
-    fetchCourses()
-  }, [user])
+    };
+    fetchCourses();
+  }, [user]);
 
   useEffect(() => {
     let filtered = [...instructorCourses]

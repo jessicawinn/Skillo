@@ -3,7 +3,7 @@
 import React, { useState, useEffect } from "react";
 
 const MyCourses = () => {
-  const [activeTab, setActiveTab] = useState("completed");
+  const [activeTab, setActiveTab] = useState("upcoming");
   const [courses, setCourses] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);

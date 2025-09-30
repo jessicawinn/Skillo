@@ -26,8 +26,27 @@ const AllCourses = ({ basePath = "", fetchEnrollments = true }) => {
           _id: c._id.toString()
         }));
 
-        setCourses(normalizedCourses);
-        setFilteredCourses(normalizedCourses);
+        // Fetch thumbnail from Azure for each course
+        const coursesWithThumbnails = await Promise.all(
+          normalizedCourses.map(async (course) => {
+            try {
+              const imagesRes = await fetch(`/api/get-images?courseId=${course._id}`);
+              const imagesData = await imagesRes.json();
+              return {
+                ...course,
+                thumbnail: imagesData.urls && imagesData.urls.length > 0 ? imagesData.urls[0] : course.thumbnail || ""
+              };
+            } catch {
+              return {
+                ...course,
+                thumbnail: course.thumbnail || ""
+              };
+            }
+          })
+        );
+
+        setCourses(coursesWithThumbnails);
+        setFilteredCourses(coursesWithThumbnails);
 
         if (fetchEnrollments) {
           const userRes = await fetch("/api/auth/me", { credentials: "include" });
@@ -106,7 +125,7 @@ const AllCourses = ({ basePath = "", fetchEnrollments = true }) => {
               type="text"
               value={searchQuery}
               onChange={handleSearch}
-              placeholder="What would you like to learn today"
+              placeholder="Search..."
               className="flex-1 border-2 border-gray-400 bg-white rounded-lg px-4 py-3 focus:outline-none"
             />
             {/* <button className="bg-purple-400 text-white px-4 py-2 rounded-r-lg hover:bg-purple-500 transition">

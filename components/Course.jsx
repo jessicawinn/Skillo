@@ -1,14 +1,13 @@
 import React from 'react';
-import Link from 'next/link';
+// Removed Link import to avoid nested anchor tags
 
 const Course = ({ course, enrolled = false, width = "w-72", basePath = ""}) => {
-    const courseLink = enrolled ? `${basePath}/mylearning` :`${basePath}/courses/${course._id}`;
     const buttonText = enrolled ? "Go to courses" : "View Courses";
 
     return (
         <div className={`${width} bg-white rounded-lg shadow-md overflow-hidden hover:shadow-xl transition p-4`}>
             <img
-                src={course.image_url}
+                src={course.thumbnail || "/placeholder.svg"}
                 alt={course.title}
                 className="w-full h-48 object-cover rounded-md"
             />
@@ -31,11 +30,9 @@ const Course = ({ course, enrolled = false, width = "w-72", basePath = ""}) => {
                 </div>
 
                 <div className="mt-4 flex justify-center">
-                    <Link href={courseLink} className="w-[95%]">
-                        <button className="w-full bg-purple-700 rounded-2xl text-white py-2 hover:bg-purple-800 transition">
-                            {buttonText}
-                        </button>
-                    </Link>
+                    <button className="w-full bg-purple-700 rounded-2xl text-white py-2 hover:bg-purple-800 transition">
+                        {buttonText}
+                    </button>
                 </div>
             </div>
         </div>

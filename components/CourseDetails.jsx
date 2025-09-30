@@ -7,6 +7,20 @@ const CourseDetails = ({ course }) => {
   const [loading, setLoading] = useState(true);
   const [enrolled, setEnrolled] = useState(false);
   const [enrolling, setEnrolling] = useState(false);
+  const [imageUrl, setImageUrl] = useState("");
+  // Fetch course image from Azure Blob Storage
+  useEffect(() => {
+    const fetchImage = async () => {
+      try {
+        const imagesRes = await fetch(`/api/get-images?courseId=${course._id}`);
+        const imagesData = await imagesRes.json();
+        setImageUrl(imagesData.urls && imagesData.urls.length > 0 ? imagesData.urls[0] : course.thumbnail || "");
+      } catch {
+        setImageUrl(course.thumbnail || "");
+      }
+    };
+    fetchImage();
+  }, [course._id, course.thumbnail]);
 
   // Fetch lessons
   useEffect(() => {
@@ -95,7 +109,7 @@ const CourseDetails = ({ course }) => {
       {/* Top Section */}
       <div className="flex flex-col md:flex-row gap-6">
         <img
-          src={course.image_url}
+          src={imageUrl || "/placeholder.svg"}
           alt={course.title}
           className="w-full md:w-1/2 h-64 md:h-80 object-cover rounded-lg"
         />

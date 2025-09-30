@@ -42,11 +42,20 @@ const MyLearning = () => {
               .map(async (enrollment) => {
                 // Calculate real progress from database
                 let progress = 0;
+                let thumbnail = "";
                 try {
                   // Get user progress for this course
                   const progressRes = await fetch(`/api/progress?userId=${userId}&courseId=${enrollment.course._id}`);
                   // Get lessons to count total contents
                   const lessonsRes = await fetch(`/api/courses/${enrollment.course._id}/lessons`);
+                  // Get thumbnail from Azure Blob Storage
+                  try {
+                    const imagesRes = await fetch(`/api/get-images?courseId=${enrollment.course._id}`);
+                    const imagesData = await imagesRes.json();
+                    thumbnail = imagesData.urls && imagesData.urls.length > 0 ? imagesData.urls[0] : enrollment.course.thumbnail || "";
+                  } catch {
+                    thumbnail = enrollment.course.thumbnail || "";
+                  }
                   if (progressRes.ok && lessonsRes.ok) {
                     const progressData = await progressRes.json();
                     const lessonsData = await lessonsRes.json();
@@ -73,6 +82,7 @@ const MyLearning = () => {
                 return { 
                   ...enrollment.course, 
                   progress,
+                  thumbnail,
                   enrollmentId: enrollment._id 
                 };
               })
@@ -126,9 +136,9 @@ const MyLearning = () => {
           filteredCourse.map(course => (
             <MyLearningCard
               key={course._id}
-              id={course._id} // use real _id
+              id={course._id}
               title={course.title}
-              image={course.image_url}
+              image={course.thumbnail || "/placeholder.svg"}
               progress={course.progress}
             />
           ))
