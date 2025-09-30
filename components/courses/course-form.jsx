@@ -2,7 +2,8 @@
 import { useState } from "react";
 import { X, Plus, Minus, Upload, Eye } from "lucide-react";
 
-export function CourseForm({ course, onSubmit, onCancel, isLoading = false }) {
+
+export function CourseForm({ course, onSubmit, onCancel, isLoading = false, onImageUpload, thumbnail }) {
   const [formData, setFormData] = useState({
     title: course?.title || "",
     description: course?.description || "",
@@ -10,14 +11,13 @@ export function CourseForm({ course, onSubmit, onCancel, isLoading = false }) {
     level: course?.level || "beginner",
     duration: course?.duration || "",
     price: course?.price || 0,
-    thumbnail: course?.thumbnail || "",
     learningPoints: course?.learningPoints || [""],
     tools: course?.tools || [""],
   });
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    onSubmit(formData);
+    onSubmit({ ...formData, thumbnail });
   };
 
   const handleChange = (field, value) => {
@@ -166,21 +166,21 @@ export function CourseForm({ course, onSubmit, onCancel, isLoading = false }) {
             Course Media
           </h3>
           
-          {/* Thumbnail */}
+          {/* Thumbnail Upload */}
           <div>
             <label htmlFor="thumbnail" className="block text-sm font-medium text-gray-700 mb-2">
-              Thumbnail Image URL
+              Thumbnail Image
             </label>
-            <div className="flex gap-3">
+            <div className="flex gap-3 items-center">
               <input
                 id="thumbnail"
-                type="url"
+                type="file"
+                accept="image/*"
                 className="flex-1 border border-gray-300 rounded-lg px-4 py-3 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
-                value={formData.thumbnail}
-                onChange={(e) => handleChange("thumbnail", e.target.value)}
-                placeholder="https://example.com/image.jpg"
+                onChange={e => onImageUpload && onImageUpload(e.target.files[0])}
+                disabled={isLoading}
               />
-              {formData.thumbnail && (
+              {thumbnail && (
                 <button
                   type="button"
                   className="px-4 py-3 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors"
@@ -190,15 +190,13 @@ export function CourseForm({ course, onSubmit, onCancel, isLoading = false }) {
                 </button>
               )}
             </div>
-            {formData.thumbnail && (
+            {thumbnail && (
               <div className="mt-3">
                 <img
-                  src={formData.thumbnail}
+                  src={thumbnail}
                   alt="Thumbnail preview"
                   className="w-32 h-20 object-cover rounded-lg border"
-                  onError={(e) => {
-                    e.target.style.display = 'none';
-                  }}
+                  onError={e => { e.target.style.display = 'none'; }}
                 />
               </div>
             )}
