@@ -2,7 +2,7 @@ import { NextResponse } from "next/server";
 import { BlobServiceClient } from "@azure/storage-blob";
 
 const AZURE_STORAGE_CONNECTION_STRING = process.env.AZURE_STORAGE_CONNECTION_STRING;
-const CONTAINER_NAME = process.env.AZURE_BLOB_CONTAINER || "skillo-images";
+const CONTAINER_NAME = process.env.AZURE_CONTAINER_NAME || "skillo-images";
 
 export const config = { api: { bodyParser: false } };
 

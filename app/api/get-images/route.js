@@ -9,15 +9,16 @@ export async function GET(req) {
       return new Response(JSON.stringify({ message: "Missing courseId" }), { status: 400 });
     }
 
+    const containerName = process.env.AZURE_CONTAINER_NAME || "skillo-images";
     const blobServiceClient = BlobServiceClient.fromConnectionString(process.env.AZURE_STORAGE_CONNECTION_STRING);
-    const containerClient = blobServiceClient.getContainerClient("skillo-images");
+    const containerClient = blobServiceClient.getContainerClient(containerName);
 
-  const prefix = `${courseId}/`;
+    const prefix = `${courseId}/`;
     const urls = [];
 
     for await (const blob of containerClient.listBlobsFlat({ prefix })) {
       // Construct the public URL directly
-      const publicUrl = `https://skillo.blob.core.windows.net/skillo-images/${blob.name}`;
+      const publicUrl = `https://skillo.blob.core.windows.net/${containerName}/${blob.name}`;
       urls.push(publicUrl);
     }
 

@@ -11,10 +11,11 @@ export async function POST(req) {
     }
     const fileBuffer = Buffer.from(await file.arrayBuffer());
     const fileName = `${Date.now()}-${file.name}`;
-  const blobPath = `${courseId}/${fileName}`;
+    const blobPath = `${courseId}/${fileName}`;
 
+    const containerName = process.env.AZURE_CONTAINER_NAME || "skillo-images";
     const blobServiceClient = BlobServiceClient.fromConnectionString(process.env.AZURE_STORAGE_CONNECTION_STRING);
-    const containerClient = blobServiceClient.getContainerClient("skillo-images");
+    const containerClient = blobServiceClient.getContainerClient(containerName);
     const blockBlobClient = containerClient.getBlockBlobClient(blobPath);
 
     // Detect MIME type from file name (basic)
