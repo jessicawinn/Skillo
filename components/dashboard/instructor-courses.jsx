@@ -86,12 +86,12 @@ export function InstructorCourses({ courses, onEdit, onDelete, onView, onCreate 
                   >
                     <Eye className="h-4 w-4 mr-1" /> View
                   </button>
-                  <button 
+                  {/* <button 
                     onClick={() => onEdit(course)}
                     className="inline-flex items-center px-3 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 transition-colors duration-200"
                   >
                     <Edit className="h-4 w-4 mr-1" /> Edit
-                  </button>
+                  </button> */}
                   <button 
                     onClick={() => onDelete(course._id || course.id)}
                     className="inline-flex items-center px-3 py-2 border border-red-300 text-sm font-medium rounded-md text-red-700 bg-white hover:bg-red-50 transition-colors duration-200"

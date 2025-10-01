@@ -132,7 +132,6 @@ export default function InstructorDashboard() {
         <div className="shadow-lg rounded-xl bg-white p-6">
           <InstructorCourses
             courses={instructorCourses}
-            onEdit={handleEditCourse}
             onDelete={handleDeleteCourse}
             onView={handleViewCourse}
             onCreate={handleCreateCourse}

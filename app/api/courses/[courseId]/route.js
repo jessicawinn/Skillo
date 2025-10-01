@@ -3,7 +3,8 @@ import clientPromise from "@/lib/mongodb";
 import { ObjectId } from "mongodb";
 
 export async function PUT(req, context) {
-  const { courseId } = context.params;
+  const params = await context.params;
+  const { courseId } = params;
   const body = await req.json();
 
   // List all fields you want to allow updating (except enrolledStudents)

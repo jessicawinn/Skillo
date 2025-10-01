@@ -53,8 +53,11 @@ export default function CoursePage() {
   const [lessons, setLessons] = useState([])
   const [showLessonForm, setShowLessonForm] = useState(false)
   const [editingLesson, setEditingLesson] = useState(null)
-    const [images, setImages] = useState([])
-    const [imageLoading, setImageLoading] = useState(false)
+  const [images, setImages] = useState([])
+  const [imageLoading, setImageLoading] = useState(false)
+  const [enrolledStudents, setEnrolledStudents] = useState(0)
+  const [newThumbnailFile, setNewThumbnailFile] = useState(null);
+  const [thumbnailPreview, setThumbnailPreview] = useState("");
 
   const params = useParams()
   const router = useRouter()
@@ -86,6 +89,17 @@ export default function CoursePage() {
       }
     };
     fetchCourse();
+    // Fetch enrolled students count
+    const fetchEnrolledStudents = async () => {
+      try {
+        const enrollmentsRes = await fetch(`/api/enrollments?courseId=${courseId}`);
+        const enrollmentsData = await enrollmentsRes.json();
+        setEnrolledStudents(Array.isArray(enrollmentsData.enrollments) ? enrollmentsData.enrollments.length : 0);
+      } catch {
+        setEnrolledStudents(0);
+      }
+    };
+    fetchEnrolledStudents();
   }, [courseId]);
 
     // Fetch images from Azure Blob Storage using your API
@@ -108,32 +122,55 @@ export default function CoursePage() {
       fetchImages();
     }, [courseId]);
 
-  const handleEditCourse = () => setShowEditCourseForm(true)
+  const handleEditCourse = () => {
+    setThumbnailPreview(images[0] || course?.thumbnail || "");
+    setShowEditCourseForm(true);
+  }
   const handleCancelEditCourse = () => setShowEditCourseForm(false)
 
-  const handleSubmitEditCourse = (updatedData) => {
-    // Update course in backend
+  const handleSubmitEditCourse = async (updatedData) => {
+    let thumbnailUrl = thumbnailPreview;
+    // If a new image file is selected, replace the image in Azure
+    if (newThumbnailFile) {
+      const formData = new FormData();
+      formData.append("courseId", courseId);
+      formData.append("oldImageUrl", images[0] || course?.thumbnail || "");
+      formData.append("newImage", newThumbnailFile);
+      try {
+        const res = await fetch("/api/replace-image", {
+          method: "POST",
+          body: formData
+        });
+        const data = await res.json();
+        thumbnailUrl = data.url;
+      } catch (err) {
+        console.error("Image replace error", err);
+      }
+    }
+    // Update course info with new thumbnail
     fetch(`/api/courses/${courseId}`, {
       method: "PUT",
       headers: {
         "Content-Type": "application/json"
       },
-      body: JSON.stringify(updatedData)
+      body: JSON.stringify({ ...updatedData, thumbnail: thumbnailUrl })
     })
       .then(res => res.json())
       .then(data => {
         if (data.course) {
           setCourse(data.course);
         } else {
-          // fallback: update local state only
-          setCourse((prev) => ({ ...prev, ...updatedData }));
+          setCourse((prev) => ({ ...prev, ...updatedData, thumbnail: thumbnailUrl }));
         }
         setShowEditCourseForm(false);
+        setNewThumbnailFile(null);
+        setThumbnailPreview("");
       })
       .catch(() => {
-        // fallback: update local state only
-        setCourse((prev) => ({ ...prev, ...updatedData }));
+        setCourse((prev) => ({ ...prev, ...updatedData, thumbnail: thumbnailUrl }));
         setShowEditCourseForm(false);
+        setNewThumbnailFile(null);
+        setThumbnailPreview("");
       });
   }
 
@@ -309,7 +346,7 @@ export default function CoursePage() {
                   </div>
                   <span className="text-purple-700 font-medium">Students</span>
                 </div>
-                <p className="text-2xl font-bold text-purple-900">{course.students || 0}</p>
+                <p className="text-2xl font-bold text-purple-900">{enrolledStudents}</p>
                 <p className="text-purple-600 text-sm">Enrolled</p>
               </div>
               
@@ -447,6 +484,11 @@ export default function CoursePage() {
               course={course}
               onSubmit={handleSubmitEditCourse}
               onCancel={handleCancelEditCourse}
+              thumbnail={thumbnailPreview}
+              onImageUpload={file => {
+                setNewThumbnailFile(file);
+                setThumbnailPreview(file ? URL.createObjectURL(file) : images[0] || course?.thumbnail || "");
+              }}
             />
           </div>
         </div>
