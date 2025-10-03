@@ -125,7 +125,7 @@ const CourseDetails = ({ course }) => {
           <div className="flex items-center mt-2">
             <span className="text-yellow-400 text-xl mr-2">★</span>
             <span className="font-semibold">{course.rating}</span>
-            <span className="text-gray-500 text-sm ml-2">({course.reviews})</span>
+            {/* <span className="text-gray-500 text-sm ml-2">({course.reviews})</span> */}
           </div>
           <p className="text-gray-600 mt-3">{course.description}</p>
 

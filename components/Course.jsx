@@ -1,8 +1,28 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 // Removed Link import to avoid nested anchor tags
 
 const Course = ({ course, enrolled = false, width = "w-72", basePath = ""}) => {
+    const [lessonCount, setLessonCount] = useState(0);
     const buttonText = enrolled ? "Go to courses" : "View Courses";
+
+    useEffect(() => {
+        const fetchLessonCount = async () => {
+            try {
+                const res = await fetch(`/api/courses/${course._id}/lessons`);
+                if (res.ok) {
+                    const data = await res.json();
+                    setLessonCount(data.lessons ? data.lessons.length : 0);
+                }
+            } catch (error) {
+                console.error('Error fetching lesson count:', error);
+                setLessonCount(0);
+            }
+        };
+
+        if (course._id) {
+            fetchLessonCount();
+        }
+    }, [course._id]);
 
     return (
         <div className={`${width} bg-white rounded-lg shadow-md overflow-hidden hover:shadow-xl transition p-4`}>
@@ -16,8 +36,8 @@ const Course = ({ course, enrolled = false, width = "w-72", basePath = ""}) => {
                 <h2 className="text-lg font-semibold text-gray-800">{course.title}</h2>
 
                 <div className="flex items-center mt-2">
-                    <span className="text-yellow-400 mr-2">★ {course.rating}</span>
-                    <span className="text-gray-500 text-sm">({course.reviews} reviews)</span>
+                    {/* <span className="text-yellow-400 mr-2">★ {course.rating}</span> */}
+                    {/* <span className="text-gray-500 text-sm">({course.reviews} reviews)</span> */}
                 </div>
 
                 <div className="mt-2">
@@ -25,8 +45,8 @@ const Course = ({ course, enrolled = false, width = "w-72", basePath = ""}) => {
                 </div>
 
                 <div className="flex justify-between text-sm text-gray-600 mt-2">
-                    <span>{course.lesson} lessons</span>
-                    <span>{course.hours} hours</span>
+                    <span>{lessonCount} lessons</span>
+                    {/* <span>{course.hours} hours</span> */}
                 </div>
 
                 <div className="mt-4 flex justify-center">

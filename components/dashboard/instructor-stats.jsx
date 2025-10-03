@@ -13,9 +13,9 @@ export function InstructorStats({ totalCourses, totalStudents, totalRevenue }) {
       iconColor: "text-purple-600"
     },
     {
-      title: "Total Students", 
+      title: "Unique Students", 
       value: totalStudents,
-      subtitle: "Enrolled across all courses",
+      subtitle: "Students enrolled in your courses",
       icon: Users,
       color: "from-purple-500 to-purple-700",
       iconBg: "bg-purple-100",
@@ -23,7 +23,7 @@ export function InstructorStats({ totalCourses, totalStudents, totalRevenue }) {
     },
     {
       title: "Total Revenue",
-      value: `$${totalRevenue || 0}`,
+      value: `$${typeof totalRevenue === 'number' ? totalRevenue.toFixed(2) : '0.00'}`,
       subtitle: "From course enrollments",
       icon: DollarSign,
       color: "from-purple-500 to-purple-700", 

@@ -40,25 +40,56 @@ export async function GET(req, context) {
       }
 
       const courseIds = courses.map(course => course._id);
+      console.log('Debug Stats - Course IDs:', courseIds.map(id => id.toString()));
 
       // Get all enrollments for these courses
+      // Handle both string and ObjectId formats like the enrollments API
+      const courseIdsAsStrings = courseIds.map(id => id.toString());
       const enrollments = await enrollmentsCollection
-        .find({ courseId: { $in: courseIds } })
+        .find({ 
+          $or: [
+            { courseId: { $in: courseIds } },        // ObjectId format
+            { courseId: { $in: courseIdsAsStrings } } // String format
+          ]
+        })
         .toArray();
+        
+      console.log('Debug Stats - Total enrollments found:', enrollments.length);
+      console.log('Debug Stats - Enrollments by course:', enrollments.map(e => ({
+        courseId: e.courseId.toString(),
+        courseName: courses.find(c => c._id.toString() === e.courseId.toString())?.title
+      })));
 
       // Calculate stats
       const totalCourses = courses.length;
-      const totalStudents = enrollments.length; // Each enrollment = 1 student
+      
+      // Count unique students (not total enrollments)
+      const uniqueStudentIds = new Set();
+      enrollments.forEach(enrollment => {
+        // Handle both ObjectId and string formats
+        const studentId = enrollment.userId ? enrollment.userId.toString() : null;
+        if (studentId) {
+          uniqueStudentIds.add(studentId);
+        }
+      });
+      const totalStudents = uniqueStudentIds.size;
+      
+      console.log('Debug Stats - Unique students found:', totalStudents);
+      console.log('Debug Stats - Unique student IDs:', Array.from(uniqueStudentIds));
       
       // Calculate total revenue from enrollments
       let totalRevenue = 0;
+      
       for (const enrollment of enrollments) {
         const course = courses.find(c => c._id.toString() === enrollment.courseId.toString());
         if (course && course.price) {
-          // Convert price to number to avoid string concatenation
-          totalRevenue += Number(course.price);
+          const coursePrice = Number(course.price);
+          totalRevenue += coursePrice;
         }
       }
+      
+      // Fix floating-point precision issues by rounding to 2 decimal places
+      totalRevenue = Math.round(totalRevenue * 100) / 100;
 
       return new Response(
         JSON.stringify({

@@ -56,7 +56,10 @@ export default function InstructorCoursesPage() {
               const enrollmentsRes = await fetch(`/api/enrollments?courseId=${courseId}`);
               const enrollmentsData = await enrollmentsRes.json();
               enrolledStudents = Array.isArray(enrollmentsData.enrollments) ? enrollmentsData.enrollments.length : 0;
-            } catch {}
+              console.log(`Debug - Course: ${course.title}, Enrollments: ${enrolledStudents}`);
+            } catch (error) {
+              console.log(`Debug - Error fetching enrollments for ${course.title}:`, error);
+            }
             return {
               ...course,
               thumbnail,

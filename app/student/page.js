@@ -13,7 +13,7 @@ export default function Home() {
       <Hero/>
       <Stats/>
       <MyCourses/>
-      <RecommendedCourses basePath="/student"/>
+      {/* <RecommendedCourses basePath="/student"/> */}
       <Footer />
     </>
   );
