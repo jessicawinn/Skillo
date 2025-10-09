@@ -47,26 +47,29 @@ const Login = ({ isOpen, onClose, onSwitchToSignup }) => {
 
       if (res.ok) {
         alert('Signin successful!');
-        console.log(data.user?.role);
+        console.log('Login response data:', data);
+        console.log('User role:', data.user?.role);
 
-        if (data.user?.role === "student") {
-          router.push("/student");
-        } else if (data.user?.role === "instructor") {
-          router.push("/instructor/dashboard");
-        } else {
-          router.push("/");
-        }
-        // Close modal after redirect
-        // onClose(); // Try commenting this out for testing
+        // Restore scrolling BEFORE navigation
+        document.body.style.overflow = "unset";
+        
+        // Close modal before navigation
+        onClose();
+        
+        // Add small delay before navigation to ensure modal closes
+        setTimeout(() => {
+          if (data.user?.role === "student") {
+            console.log('Navigating to /student');
+            router.push("/student");
+          } else if (data.user?.role === "instructor") {
+            console.log('Navigating to /instructor/dashboard');
+            router.push("/instructor/dashboard");
+          } else {
+            console.log('Navigating to / (default)');
+            router.push("/");
+          }
+        }, 100);
       }
-
-      // Close modal and reset after redirect
-      setTimeout(() => {
-        // onClose();
-        setEmail("");
-        setPassword("");
-        setMessage("");
-      }, 100); // Short delay to allow navigation
 
     } catch (error) {
       console.error(error);

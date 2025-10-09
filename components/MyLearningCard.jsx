@@ -28,9 +28,11 @@ const MyLearningCard = ({ id, title, image, progress }) => {
         </p>
 
         {isComplete ? (
-          <button className="w-full py-2 rounded-lg text-white bg-green-600 hover:bg-green-700 transition">
-            Completed
-          </button>
+          <Link href={`/student/mylearning/${id}`} className="w-full">
+            <button className="w-full py-2 rounded-lg text-white bg-green-600 hover:bg-green-700 transition">
+              Review Course
+            </button>
+          </Link>
         ) : (
           <Link href={`/student/mylearning/${id}`} className="w-full">
             <button className="w-full py-2 rounded-lg text-white bg-purple-700 hover:bg-purple-800 transition">
