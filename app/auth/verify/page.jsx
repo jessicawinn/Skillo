@@ -1,10 +1,10 @@
 "use client";
-import { useEffect, useState } from "react";
+import { useEffect, useState, Suspense } from "react";
 import { useSearchParams } from "next/navigation";
 import Signup from "@/components/modals/Signup";
 import Login from "@/components/modals/Login";
 
-const VerifyPage = () => {
+const VerifyContent = () => {
     const searchParams = useSearchParams();
     const token = searchParams.get("token");
     const email = searchParams.get("email");
@@ -48,6 +48,21 @@ const VerifyPage = () => {
             {/* Show login modal if verification is successful */}
             {showLogin && <Login isOpen={true} onClose={() => setShowLogin(false)} />}
         </div>
+    );
+};
+
+const VerifyPage = () => {
+    return (
+        <Suspense fallback={
+            <div className="min-h-screen flex flex-col items-center justify-center bg-gray-50">
+                <div className="bg-white p-8 rounded shadow-lg w-full max-w-md text-center">
+                    <h1 className="text-2xl font-bold mb-4">Email Verification</h1>
+                    <p>Loading...</p>
+                </div>
+            </div>
+        }>
+            <VerifyContent />
+        </Suspense>
     );
 };
 

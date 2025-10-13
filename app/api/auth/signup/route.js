@@ -53,7 +53,7 @@ export async function POST(req) {
 
     const verifyUrl = `${process.env.BASE_URL}/auth/verify?token=${token}&email=${encodeURIComponent(email)}`;
     await transporter.sendMail({
-      from: process.env.FROM_EMAIL,
+      from: '<you@gmail.com>',
       to: email,
       subject: "Verify your email",
       html: `<p>Hi ${name},</p>
