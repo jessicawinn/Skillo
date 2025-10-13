@@ -1,36 +1,63 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://github.com/vercel/next.js/tree/canary/packages/create-next-app).
+# Skillo
 
-## Getting Started
+---
 
-First, run the development server:
+## Team Members
+- Jessica Winn – [GitHub Repo](https://github.com/jessicawinn/Skillo)  
+- Yunn Yamone Aung – [GitHub Repo](https://github.com/jessicawinn/Skillo)  
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
-```
+---
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+## About Our Project - Skillo
+**Skillo** is a modern learning platform designed to connect students with hands-on workshops and courses.  
+The platform allows educators to create, manage, and share workshops while students can explore, enroll, and track their learning journey.  
 
-You can start editing the page by modifying `app/page.js`. The page auto-updates as you edit the file.
+Skillo focuses on practical learning experiences with AI-powered recommendations, making it easier for students to find relevant workshops based on their interests and progress.
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+---
 
-## Learn More
+## Features
+- Student profiles with completed and ongoing courses  
+- AI-powered course recommendations  
+- Educator dashboards for course/workshop management   
+- Secure authentication using JWT & MongoDB  
+- Azure Blob Storage for media uploads  
 
-To learn more about Next.js, take a look at the following resources:
+---
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+## Tech Stack
+- **Framework:** Next.js (React)  
+- **Backend:** Node.js + MongoDB  
+- **Cloud Services:** Azure Blob Storage  
+- **Language:** JavaScript / TypeScript  
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+---
 
-## Deploy on Vercel
+## Screenshots
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+### Landing Page
+![Landing Page](./screenshots/landingpage.png)
+![Landing Page with Courses](./screenshots/landingpage_courses.png)
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+### Student Dashboard
+![Student Dashboard](./screenshots/student_dashboard.png)
+![Student Dashboard (Alt View)](./screenshots/student_dashboard2.png)
+
+### Student Courses
+![Student Courses](./screenshots/student_courses.png)
+![My Courses](./screenshots/mycourses.png)
+![Courses In Progress](./screenshots/courses_inProgress.png)
+![Completed Courses](./screenshots/courses_complete.png)
+
+### Instructor Dashboard
+![Instructor Dashboard](./screenshots/instructor_dashboard.png)
+![Instructor Courses](./screenshots/instructor_courses.png)
+![Create Course](./screenshots/instructor_createcourse.png)
+
+---
+
+## How to Run
+1. Clone the repository:
+   ```bash
+   git clone https://github.com/jessicawinn/Skillo.git
+   cd Skillo
